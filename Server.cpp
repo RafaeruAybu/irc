@@ -3,9 +3,26 @@
 //init server
 Serv::Serv(std::string port, std::string password)
 {
-    listen_socket = get_listen_sock(stoi(port));
-    //todo delete
-    std::cout << listen_socket << std::endl;
+    this->password = stoi(password);
+    listen_socket = get_listen_sock(stoi(port)); //get listen sock
+    num = sizeof(fd_list) / sizeof(fd_list[0]); //num of fds
+    int i = 0;
+    for (; i < num; i++) //init
+    {
+        fd_list[i].fd = -1;
+        fd_list[i].events = 0; //set of events
+        fd_list[i].revents = 0; //r event???
+    }
+    i = 0;
+    for (; i < num; i++) // add read-only events
+    {
+        if (fd_list[i].fd == -1)
+        {
+            fd_list[i].fd = listen_socket;
+            fd_list[i].events = POLLIN;
+            break;
+        }
+    }
 }
 
 //delete server
@@ -36,4 +53,87 @@ int Serv::get_listen_sock(int port)
         throw "listen failed";
     
     return sock;
+}
+
+void Serv::get_into_loop()
+{
+    while (1)
+    {
+        switch( poll(fd_list, num, POLL_TIMEOUT)) // 3000 is a timeout time
+        {
+            case 0:
+                std::cout << "poll timeout..." << std::endl;
+                continue;
+            case -1:
+                std::cout << "poll fail..." << std::endl;
+                continue;
+            default: //if poll worked as expected
+            {
+                //if it is a listener fd, call an accept to accept new connection
+                //if it is a client fd, read the data
+                int i = 0;
+                for (; i < num; i++) //for every fd
+                {
+                    if (fd_list[i].fd == -1)
+                        continue;
+                    if (fd_list[i].fd == listen_socket && (fd_list[i].revents & POLLIN))
+                    {
+                        //provide a connectinon acceptance here
+                        struct sockaddr_in client;
+                        socklen_t len = sizeof(client);
+                        int new_sock = accept(listen_socket,(struct sockaddr *)&client,&len);
+                        if (new_sock < 0)
+                        {
+                            std::cout << "accept fail..." << std::endl;
+                            continue;
+                        }
+                        int i = 0;
+                        for (; i < num; i++)
+                        {
+                            if (fd_list[i].fd == -1)
+                                break;
+                        }
+                        if (i < num)
+                        {
+                            fd_list[i].fd = new_sock;
+                            fd_list[i].events = POLLIN;
+                        }
+                        else
+                            close(new_sock);
+                        std::cout
+                            << "get a new connection[" << inet_ntoa(client.sin_addr)
+                            << ":" << ntohs(client.sin_port) << "]" << std::endl;
+                        continue;
+                    }
+                    // For all normall fds
+                    if (fd_list[i].revents & POLLIN)
+                    {
+                        char buf[BUFF_SIZE];
+                        ssize_t s = read(fd_list[i].fd, buf, sizeof(buf)-1);
+                        if (s < 0)
+                        {
+                            std::cout << "read failed..." << std::endl;
+                        }
+                        else if (s == 0)
+                        {
+                            std::cout << "client quit..." << std::endl;
+                            close(fd_list[i].fd);
+                            fd_list[i].fd = -1;
+                        }
+                        else
+                        {
+                            buf[s] = 0; //null terminate
+                        }
+                        for (int i = 1; i < num; i++)
+                        {
+                            if (fd_list[i].fd != -1)
+                                write(fd_list[i].fd, buf, s);
+                        }
+                    }
+                }
+            }
+                break;
+        }
+    }
+    return ;
 }
