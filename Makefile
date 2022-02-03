@@ -1,5 +1,5 @@
 NAME	= a.out
-SRC		= main.cpp
+SRC		= main.cpp Server.cpp
 CXX		= c++
 CPPFLAGS	= -Wall -Wextra -Werror -std=c++98
 OBJ		= $(SRC:.cpp=.o)
