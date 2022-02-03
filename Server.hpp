@@ -3,6 +3,10 @@
 //cpp headers
 #include <iostream>
 #include <string>
+#include <vector>
+#include <map>
+#include "Client.hpp"
+// #include <basic_string.h>
 //c headers
 #include <stdio.h>
 #include <unistd.h>
@@ -27,18 +31,19 @@ public:
     ~Serv();
 
 private:
-    //default holy
     Serv();
     Serv(const Serv &other);
     Serv& operator= (const Serv& other);
 
     //foos
     int get_listen_sock(int port);
+    void process(int fd, char *buf);
     //params
     int listen_socket;  //listening socket
     int password;       //servers password (PASS 12345678)
-    struct pollfd fd_list[MAX_USERS]; //fd list to poll
     int num;              //user num including listener
+    struct pollfd fd_list[MAX_USERS]; //fd list to poll
+    std::vector<Client> users; //userlist
 
 };
 

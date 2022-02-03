@@ -3,8 +3,8 @@
 //init server
 Serv::Serv(std::string port, std::string password)
 {
-    this->password = stoi(password);
-    listen_socket = get_listen_sock(stoi(port)); //get listen sock
+    this->password = atoi(password.c_str());
+    listen_socket = get_listen_sock(atoi(port.c_str())); //get listen sock
     num = sizeof(fd_list) / sizeof(fd_list[0]); //num of fds
     int i = 0;
     for (; i < num; i++) //init
@@ -111,9 +111,7 @@ void Serv::get_into_loop()
                         char buf[BUFF_SIZE];
                         ssize_t s = read(fd_list[i].fd, buf, sizeof(buf)-1);
                         if (s < 0)
-                        {
                             std::cout << "read failed..." << std::endl;
-                        }
                         else if (s == 0)
                         {
                             std::cout << "client quit..." << std::endl;
@@ -121,19 +119,26 @@ void Serv::get_into_loop()
                             fd_list[i].fd = -1;
                         }
                         else
-                        {
                             buf[s] = 0; //null terminate
-                        }
-                        for (int i = 1; i < num; i++)
-                        {
-                            if (fd_list[i].fd != -1)
-                                write(fd_list[i].fd, buf, s);
-                        }
+                        //buf is (char [512]) array, so i do cast to just (char *)
+                        process(fd_list[i].fd, (char *)&buf);
                     }
                 }
             }
-                break;
+                break ;
         }
     }
     return ;
+}
+
+//Welcom to processor m8. Here using magic, buf itself, gets its meaning.
+//Here Zh3nuke AND S4ny4 are going to do their jobs.
+//Amine.
+//fd - clients fd, buf - "\0" terminated commands from client.
+//get your line
+void Serv::process(int fd, char *buf)
+{
+    (void) fd; //unvoid it and use
+    (void) buf; //unvoid it and use
+    std::cout << "hello from processor" << std::endl;
 }

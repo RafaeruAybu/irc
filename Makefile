@@ -1,11 +1,11 @@
 NAME	= a.out
-SRC		= main.cpp Server.cpp
+SRC		= main.cpp Server.cpp Client.cpp Channel.cpp
 CXX		= c++
 CPPFLAGS	= -Wall -Wextra -Werror -std=c++98
 OBJ		= $(SRC:.cpp=.o)
 
 $(NAME): $(OBJ)
-	$(CXX) $(CPPFLAGS) $(OBJ) -o $(NAME)
+	$(CXX) $(CPPFLAGS) $(OBJ) -o $(NAME) 
 
 all: $(NAME)
 
