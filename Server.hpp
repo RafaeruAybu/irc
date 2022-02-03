@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include "Client.hpp"
+#include "Channel.hpp"
 //c headers
 #include <stdio.h>
 #include <unistd.h>
@@ -55,7 +56,7 @@ private:
     int num;                            //user num including listener
     struct pollfd fd_list[MAX_USERS];   //fd list to poll
     std::vector<Client> users;          //userlist
-
+    std::vector<Channel> channels;      //channels
 };
 
 #endif //SERVER_HPP
