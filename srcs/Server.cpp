@@ -39,7 +39,8 @@ int Serv::get_listen_sock(int port)
         throw "failed getting sock...";
     int opt = 1;
     setsockopt(sock, SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt)); //todo explain
-    fcntl(sock, F_SETFL, O_NONBLOCK);
+    if (fcntl(sock, F_SETFL, O_NONBLOCK))
+        throw "Could not set non-blocking socket...";
     struct sockaddr_in local;
     local.sin_family = AF_INET;
     local.sin_addr.s_addr = htonl(INADDR_ANY); //any type address
@@ -82,8 +83,10 @@ void Serv::get_into_loop()
                         //provide a connectinon acceptance here
                         struct sockaddr_in client;
                         socklen_t len = sizeof(client);
-                        int new_sock = accept(listen_socket,(struct sockaddr *)&client,&len);
-                        fcntl(new_sock, F_SETFL, O_NONBLOCK);
+                        int new_sock;
+                        if (fcntl(new_sock, F_SETFL, O_NONBLOCK))
+                            throw "Could not set non-blocking socket...";
+                        new_sock = accept(listen_socket,(struct sockaddr *)&client,&len);
                         if (new_sock < 0)
                         {
                             std::cout << "accept fail..." << std::endl;
