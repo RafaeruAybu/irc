@@ -62,7 +62,7 @@ void Serv::get_into_loop()
         switch( poll(fd_list, num, POLL_TIMEOUT)) // 3000 is a timeout time
         {
             case 0:
-                std::cout << "poll timeout..." << std::endl;
+                // std::cout << "poll timeout..." << std::endl;
                 continue;
             case -1:
                 std::cout << "poll fail..." << std::endl;
@@ -140,5 +140,9 @@ void Serv::process(int fd, char *buf)
 {
     (void) fd; //unvoid it and use
     (void) buf; //unvoid it and use
-    std::cout << "hello from processor" << std::endl;
+    std::cout << "Client[" << fd << "]: " << buf << std::endl;
+    if (strstr(buf, "USER"))
+    {
+        write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
+    }
 }
