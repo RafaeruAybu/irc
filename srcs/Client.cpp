@@ -14,7 +14,7 @@ Client & Client::operator= (const Client &other)
 {
     if (this == &other)
         return *this;
-    
+
     user_name = other.user_name;
     nick = other.nick;
     f_logged = other.f_logged;

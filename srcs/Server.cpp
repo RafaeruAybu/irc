@@ -143,6 +143,7 @@ void Serv::process(int fd, char *buf)
     std::cout << "Client[" << fd << "]: " << buf << std::endl;
     if (strstr(buf, "USER"))
     {
+        add_user();
         write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
     }
 }
