@@ -17,6 +17,7 @@
 #include <sys/select.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 
 //defines
 #define MAX_USERS 1024      //user nums in 
