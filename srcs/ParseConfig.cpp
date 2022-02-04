@@ -3,12 +3,12 @@
 #include <iostream>
 #include "../includes/Server.hpp"
 
-Config Serv::ParseConfig(char *argv[])
+Config ParseConfig(char *argv[]) //move from Serv class
 {
 	Config config;
 	config.port = std::string(argv[1]); //convert cstyle to std::string
 	config.password = std::string(argv[2]); //same
-	std::ifstream file("config");
+	std::ifstream file("config.txt");
 	std::string str;
 	std::getline(file, config.server_name);
 	std::getline(file, config.operator_password);

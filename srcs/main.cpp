@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "../includes/Server.hpp"
+#include "../includes/Utils.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -12,7 +13,7 @@ int main(int argc, char *argv[])
     }
     try
     {
-        Serv serv(Serv::ParseConfig(argv)); //new server
+        Serv serv(ParseConfig(argv)); //new server
         serv.get_into_loop();
     }
     catch (std::exception &e)
