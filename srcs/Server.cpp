@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "../includes/Server.hpp"
 
 //init server
 Serv::Serv(std::string port, std::string password)
@@ -141,9 +141,9 @@ void Serv::process(int fd, char *buf)
     (void) fd; //unvoid it and use
     (void) buf; //unvoid it and use
     std::cout << "Client[" << fd << "]: " << buf << std::endl;
+    //todo delete and do it right
     if (strstr(buf, "USER"))
     {
-        add_user();
         write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
     }
 }

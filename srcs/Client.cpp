@@ -1,4 +1,4 @@
-#include "Client.hpp"
+#include "../includes/Client.hpp"
 
 Client::Client() : user_name("Undefined"), nick("Undefined"), f_logged(0), f_operator(0) {}
 

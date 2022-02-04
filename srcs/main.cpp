@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "Server.hpp"
+#include "../includes/Server.hpp"
 
 int main(int argc, char *argv[])
 {
