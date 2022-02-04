@@ -1,10 +1,13 @@
 #include "../includes/Server.hpp"
 
 //init server
-Serv::Serv(std::string port, std::string password)
+//Serv::Serv(std::string port, std::string password)
+Serv::Serv(const Config& config)
 {
-    this->password = atoi(password.c_str());
-    listen_socket = get_listen_sock(atoi(port.c_str())); //get listen sock
+	this->server_name = config.server_name;
+	this->operator_password = config.operator_password;
+    this->password = atoi(config.password.c_str());
+    listen_socket = get_listen_sock(atoi(config.port.c_str())); //get listen sock
     num = sizeof(fd_list) / sizeof(fd_list[0]); //num of fds
     int i = 0;
     for (; i < num; i++) //init

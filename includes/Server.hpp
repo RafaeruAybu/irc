@@ -23,23 +23,32 @@
 #define POLL_TIMEOUT 3000   //poll timeout time
 #define BUFF_SIZE 512       //fd read buff size
 
+struct Config {
+	std::string port;
+	std::string password;
+	std::string operator_password;
+	std::string server_name;
+};
+
 class Serv
 {
 public:
-    Serv(std::string port, std::string password);
-    void get_into_loop();
+	static Config ParseConfig(char *[]);
+	Serv(std::string port, std::string password);
+	Serv(const Config&);
+	void get_into_loop();
+
     ~Serv();
-
 private:
-    Serv();
-    Serv(const Serv &other);
-    Serv& operator= (const Serv& other);
+	Serv();
+	Serv(const Serv &other);
 
-    //foos
-    int get_listen_sock(int port);      
-    void process(int fd, char *buf);
-    //todo implement, maybee more!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!yes
-    void add_user();
+    Serv& operator= (const Serv& other);
+	//foos
+    int get_listen_sock(int port);
+	void process(int fd, char *buf);
+	//todo implement, maybee more!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!yes
+	void add_user();
     void delete_user();
     void add_channel();
     void delete_channel();
@@ -51,6 +60,8 @@ private:
     void kick();    //it is kiCK
     void ban();     //тупа бан
     //params
+    std::string server_name;
+    std::string operator_password;
     int listen_socket;                  //listening socket
     int password;                       //servers password (PASS 12345678)
     int num;                            //user num including listener

@@ -1,5 +1,5 @@
 NAME	= ircserv
-SRC		= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp
+SRC		= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp srcs/ParseConfig.cpp
 CXX		= c++
 CPPFLAGS	= -Wall -Wextra -Werror -std=c++98
 OBJ		= $(SRC:.cpp=.o)

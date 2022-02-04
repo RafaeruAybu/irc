@@ -1,3 +1,5 @@
+#include <__bit_reference>
+
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 #include <iostream>
@@ -13,7 +15,7 @@ public:
 
     Client & operator= (const Client &other);
 private:
-    int fd;
+	__unused  int fd;
     std::string user_name;
     std::string nick;
     std::string flag;
