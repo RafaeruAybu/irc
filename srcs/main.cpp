@@ -4,17 +4,15 @@
 
 int main(int argc, char *argv[])
 {
-    std::cout << "Hello world!!!" << std::endl; //todo delete line
+    std::cout << "Hello world!!!" << std::endl; //todo delete debug line
     if (argc != 3)
     {
         std::cout << "Usage: ./ircserv <port> <password>" << std::endl;
         return 0;
     }
-    std::string port(argv[1]); //convert cstyle to std::string
-    std::string password(argv[2]); //same
     try
     {
-        Serv serv(port, password); //new server
+        Serv serv(argv[1], argv[2]); //new server
         serv.get_into_loop();
     }
     catch (std::exception &e)
