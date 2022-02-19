@@ -1,10 +1,11 @@
-#include "Server.hpp"
+#include "../includes/Server.hpp"
 
 //init server
-Serv::Serv(std::string port, std::string password)
+Serv::Serv(char *port, char *password)
 {
-    this->password = atoi(password.c_str());
-    listen_socket = get_listen_sock(atoi(port.c_str())); //get listen sock
+    exit_server = false;
+    this->password = atoi(password);
+    listen_socket = get_listen_sock(atoi(port)); //get listen sock
     num = sizeof(fd_list) / sizeof(fd_list[0]); //num of fds
     int i = 0;
     for (; i < num; i++) //init
@@ -38,6 +39,8 @@ int Serv::get_listen_sock(int port)
     if (sock < 0) //check if good todo can be done using macros
         throw "failed getting sock...";
     int opt = 1;
+    if (fcntl(sock, F_SETFL, O_NONBLOCK))
+        throw "Could not set non-blocking socket...";
     setsockopt(sock, SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt)); //todo explain
     struct sockaddr_in local;
     local.sin_family = AF_INET;
@@ -57,13 +60,29 @@ int Serv::get_listen_sock(int port)
 
 void Serv::get_into_loop()
 {
-    while (1)
+    while (!exit_server) //todo end_server
     {
         switch( poll(fd_list, num, POLL_TIMEOUT)) // 3000 is a timeout time
         {
             case 0:
-                std::cout << "poll timeout..." << std::endl;
+            {
+                // std::cout << "poll timeout..." << std::endl;
+                // if (fcntl(0, F_SETFL, O_NONBLOCK)) //make new sock is non-blocking
+                //             throw "Could not set non-blocking socket...";
+                // char server_command_str[50];
+                // ssize_t size = read(0, server_command_str, sizeof(server_command_str) - 1);
+                // if (size < 0)
+                // {
+                //     if (errno != EWOULDBLOCK)
+                //                 std::cout << "read failed..." << std::endl;
+                //     continue;
+                // }
+                // else
+                //     server_command_str[size] = '\0';
+                // if (strstr(server_command_str, "stop"))
+                //     exit_server = true;
                 continue;
+            }
             case -1:
                 std::cout << "poll fail..." << std::endl;
                 continue;
@@ -74,9 +93,9 @@ void Serv::get_into_loop()
                 int i = 0;
                 for (; i < num; i++) //for every fd
                 {
-                    if (fd_list[i].fd == -1)
+                    if (fd_list[i].fd == -1) //if freed sock
                         continue;
-                    if (fd_list[i].fd == listen_socket && (fd_list[i].revents & POLLIN))
+                    if (fd_list[i].fd == listen_socket && (fd_list[i].revents & POLLIN)) //if socket is listen_sock and pollin event
                     {
                         //provide a connectinon acceptance here
                         struct sockaddr_in client;
@@ -84,9 +103,12 @@ void Serv::get_into_loop()
                         int new_sock = accept(listen_socket,(struct sockaddr *)&client,&len);
                         if (new_sock < 0)
                         {
-                            std::cout << "accept fail..." << std::endl;
-                            continue;
+                            if (errno != EWOULDBLOCK)
+                                std::cout << "accept fail..." << std::endl;
+                            break;
                         }
+                        if (fcntl(new_sock, F_SETFL, O_NONBLOCK)) //make new sock is non-blocking
+                            throw "Could not set non-blocking socket...";
                         int i = 0;
                         for (; i < num; i++)
                         {
@@ -111,12 +133,17 @@ void Serv::get_into_loop()
                         char buf[BUFF_SIZE];
                         ssize_t s = read(fd_list[i].fd, buf, sizeof(buf)-1);
                         if (s < 0)
-                            std::cout << "read failed..." << std::endl;
+                        {
+                            if (errno != EWOULDBLOCK)
+                                std::cout << "read failed..." << std::endl;
+                            break;
+                        }
                         else if (s == 0)
                         {
                             std::cout << "client quit..." << std::endl;
                             close(fd_list[i].fd);
                             fd_list[i].fd = -1;
+                            break;   //todo test
                         }
                         else
                             buf[s] = 0; //null terminate
@@ -138,7 +165,10 @@ void Serv::get_into_loop()
 //get your line
 void Serv::process(int fd, char *buf)
 {
-    (void) fd; //unvoid it and use
-    (void) buf; //unvoid it and use
-    std::cout << "hello from processor" << std::endl;
+    std::cout << "Client[" << fd << "]: " << buf << std::endl;
+    //todo delete and do it right
+    if (strstr(buf, "USER"))
+    {
+        write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
+    }
 }

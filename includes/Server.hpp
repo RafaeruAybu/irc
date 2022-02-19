@@ -17,6 +17,8 @@
 #include <sys/select.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
+#include <errno.h>
 
 //defines
 #define MAX_USERS 1024      //user nums in 
@@ -26,7 +28,7 @@
 class Serv
 {
 public:
-    Serv(std::string port, std::string password);
+    Serv(char *port, char *password);
     void get_into_loop();
     ~Serv();
 
@@ -51,6 +53,7 @@ private:
     void kick();    //it is kiCK
     void ban();     //тупа бан
     //params
+    bool exit_server;
     int listen_socket;                  //listening socket
     int password;                       //servers password (PASS 12345678)
     int num;                            //user num including listener

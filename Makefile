@@ -1,5 +1,5 @@
-NAME	= a.out
-SRC		= main.cpp Server.cpp Client.cpp Channel.cpp
+NAME	= ircserv
+SRC		= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp
 CXX		= c++
 CPPFLAGS	= -Wall -Wextra -Werror -std=c++98
 OBJ		= $(SRC:.cpp=.o)
