@@ -174,8 +174,12 @@ void Serv::process(int fd, char *buf)
 
     std::cout << "Client[" << fd << "]: " << buf << std::endl;
     //todo delete and do it right
-    if (strstr(buf, "USER"))
-    {
+
+    if (command_exmpl.get_comm() == "USER"){
         write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
     }
+//    if (strstr(buf, "USER"))
+//    {
+//        write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
+//    }
 }

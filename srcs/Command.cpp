@@ -19,7 +19,7 @@ Command::Command(const Command &copy) : _str_command(copy._str_command), _vect_a
 
 }
 
-Command::~Command() {}
+Command::~Command(){}
 
 Command &Command::operator=(const Command &assign) {
     if (this == &assign)
@@ -29,3 +29,32 @@ Command &Command::operator=(const Command &assign) {
     _vect_args = assign._vect_args;
     return (*this);
 }
+
+const std::string Command::get_comm() const {
+    return _str_command;
+}
+
+
+
+////CommandBook
+
+CommandBook::CommandBook() {
+
+}
+
+//CommandBook::CommandBook(const CommandBook &copy) {
+//
+//}
+
+CommandBook::~CommandBook() {}
+
+CommandBook &CommandBook::operator=(const CommandBook &assign) {
+    if (this == &assign)
+        return *this;
+    return (*this);
+}
+
+//void CommandBook::launchCommand(std::string command) {
+////    if (command == "USER")
+//    void(command);
+//}
