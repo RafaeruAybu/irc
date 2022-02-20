@@ -25,19 +25,4 @@ private:
     std::vector<std::string> _vect_args;
 };
 
-////CommandBook
-
-class CommandBook{
-public:
-    CommandBook();
-    CommandBook(const CommandBook &copy);
-    ~CommandBook();
-    CommandBook & operator= (const CommandBook &assign);
-    void launchCommand(std::string command);
-
-private:
-//    std::map<std::string,
-    void commandUser();
-
-};
 #endif

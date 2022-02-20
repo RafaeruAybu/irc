@@ -5,6 +5,7 @@
 Serv::Serv(char *port, char *password)
 {
     exit_server = false;
+    str_password = password; //new 20.02
     this->password = atoi(password);
     listen_socket = get_listen_sock(atoi(port)); //get listen sock
     num = sizeof(fd_list) / sizeof(fd_list[0]); //num of fds
@@ -175,7 +176,12 @@ void Serv::process(int fd, char *buf)
     std::cout << "Client[" << fd << "]: " << buf << std::endl;
     //todo delete and do it right
 
-    if (command_exmpl.get_comm() == "USER"){
+    if (command_exmpl.get_comm() == "PASS")
+        add_user();
+    else if (command_exmpl.get_comm() == "NICK")
+        add_user_nick();
+    else if (command_exmpl.get_comm() == "USER"){
+        add_user_user();
         write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
     }
 //    if (strstr(buf, "USER"))
@@ -183,3 +189,21 @@ void Serv::process(int fd, char *buf)
 //        write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
 //    }
 }
+
+
+
+
+////// Command_method
+
+void Serv::add_user() {
+
+}
+
+void Serv::add_user_nick() {
+
+}
+
+void Serv::add_user_user() {
+
+}
+

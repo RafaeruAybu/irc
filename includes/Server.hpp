@@ -42,6 +42,8 @@ private:
     void process(int fd, char *buf);
     //todo implement, maybee more!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!yes
     void add_user();
+    void add_user_nick();
+    void add_user_user();
     void delete_user();
     void add_channel();
     void delete_channel();
@@ -55,6 +57,7 @@ private:
     //params
     bool exit_server;
     int listen_socket;                  //listening socket
+    std::string str_password; //new 20.02
     int password;                       //servers password (PASS 12345678)
     int num;                            //user num including listener
     struct pollfd fd_list[MAX_USERS];   //fd list to poll
