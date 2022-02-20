@@ -1,4 +1,5 @@
 #include "../includes/Server.hpp"
+#include "../includes/Command.hpp"
 
 //init server
 Serv::Serv(char *port, char *password)
@@ -165,6 +166,12 @@ void Serv::get_into_loop()
 //get your line
 void Serv::process(int fd, char *buf)
 {
+    //
+    Command command_exmpl(buf);
+
+
+    //
+
     std::cout << "Client[" << fd << "]: " << buf << std::endl;
     //todo delete and do it right
     if (strstr(buf, "USER"))

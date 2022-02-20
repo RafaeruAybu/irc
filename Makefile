@@ -1,7 +1,12 @@
 NAME	= ircserv
-SRC		= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp
+
+SRC		=	srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp	\
+			srcs/Command.cpp
+
 CXX		= c++
-CPPFLAGS	= -Wall -Wextra -Werror -std=c++98
+
+CPPFLAGS	= -std=c++98 -Wall -Wextra -Werror
+
 OBJ		= $(SRC:.cpp=.o)
 
 $(NAME): $(OBJ)

@@ -13,7 +13,7 @@ public:
 
     Client & operator= (const Client &other);
 private:
-    int fd;
+//    int fd;
     std::string user_name;
     std::string nick;
     std::string flag;
