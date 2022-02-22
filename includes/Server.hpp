@@ -40,7 +40,11 @@ private:
     //foos
     int get_listen_sock(int port);      
     void process(int fd, char *buf);
-    //todo implement, maybee more!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!yes
+    void do_poll_timeout();
+    void do_poll_fail();
+    void do_poll_default();
+    int get_new_connection();
+    //todo foos
     void add_user();
     void add_user_nick();
     void add_user_user();
@@ -55,6 +59,7 @@ private:
     void kick();    //it is kiCK
     void ban();     //тупа бан
     //params
+    char bufs[MAX_USERS][BUFF_SIZE];    //4 Mb size in stack
     bool exit_server;
     int listen_socket;                  //listening socket
     std::string str_password; //new 20.02
