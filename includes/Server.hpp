@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "Client.hpp"
+#include "User.hpp"
 #include "Channel.hpp"
 //c headers
 #include <stdio.h>
@@ -24,6 +24,11 @@
 #define MAX_USERS 1024      //user nums in 
 #define POLL_TIMEOUT 3000   //poll timeout time
 #define BUFF_SIZE 512       //fd read buff size
+
+typedef struct response_server{
+	std::string code_response;
+	std::string str_response;
+} response_server;
 
 class Serv
 {
@@ -45,9 +50,9 @@ private:
     void do_poll_default();
     int get_new_connection();
     //todo foos
-    void add_user();
-    void add_user_nick();
-    void add_user_user();
+	response_server pass(int fd_client);
+    void nick();
+    void user();
     void delete_user();
     void add_channel();
     void delete_channel();
@@ -66,7 +71,7 @@ private:
     int password;                       //servers password (PASS 12345678)
     int num;                            //user num including listener
     struct pollfd fd_list[MAX_USERS];   //fd list to poll
-    std::vector<Client> users;          //userlist
+    std::vector<User> users;          //userlist
     std::vector<Channel> channels;      //channels
 };
 

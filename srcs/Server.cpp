@@ -1,6 +1,5 @@
 #include "../includes/Server.hpp"
-#include "../includes/Command.hpp"
-
+#include "../includes/Request.hpp"
 
 //init server
 Serv::Serv(char *port, char *password)
@@ -200,20 +199,21 @@ void Serv::get_into_loop()
 void Serv::process(int fd, char *buf)
 {
     //
-    Command command_exmpl(buf);
+    response_server my_response;
+    Request command_exmpl(buf);
 
 
     //
 
-    std::cout << "Client[" << fd << "]: " << buf << std::endl;
+    std::cout << "User[" << fd << "]: " << buf << std::endl;
     //todo delete and do it right
 
     if (command_exmpl.get_comm() == "PASS")
-        add_user();
+		my_response = pass(fd);
     else if (command_exmpl.get_comm() == "NICK")
-        add_user_nick();
+		nick();
     else if (command_exmpl.get_comm() == "USER"){
-        add_user_user();
+		user();
         write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
     }
 //    if (strstr(buf, "USER"))
@@ -227,15 +227,20 @@ void Serv::process(int fd, char *buf)
 
 ////// Command_method
 
-void Serv::add_user() {
+response_server Serv::pass(int fd_client){
+	response_server res;
+	
+	res.code_response = " ";
+	res.str_response = " ";
+	
+	return (res);
+}
+
+void Serv::nick(){
 
 }
 
-void Serv::add_user_nick() {
-
-}
-
-void Serv::add_user_user() {
+void Serv::user() {
 
 }
 

@@ -3,7 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
-#include "Client.hpp"
+#include "User.hpp"
 
 class Channel
 {
@@ -16,7 +16,7 @@ private:
     Channel();
     Channel & operator= (const Channel &other);
     std::string name;
-    std::vector<Client> users;
+    std::vector<User> users;
 };
 
 #endif

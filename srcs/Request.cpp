@@ -1,7 +1,7 @@
-#include "../includes/Command.hpp"
+#include "../includes/Request.hpp"
 
 
-Command::Command(const std::string buf) {
+Request::Request(const std::string buf) {
 
     std::istringstream iss(buf);
     std::vector<std::string> results((std::istream_iterator<std::string>(iss)),
@@ -15,13 +15,13 @@ Command::Command(const std::string buf) {
     results.clear();
 }
 
-Command::Command(const Command &copy) : _str_command(copy._str_command), _vect_args(copy._vect_args) {
+Request::Request(const Request &copy) : _str_command(copy._str_command), _vect_args(copy._vect_args) {
 
 }
 
-Command::~Command(){}
+Request::~Request(){}
 
-Command &Command::operator=(const Command &assign) {
+Request &Request::operator=(const Request &assign) {
     if (this == &assign)
         return *this;
 
@@ -30,6 +30,6 @@ Command &Command::operator=(const Command &assign) {
     return (*this);
 }
 
-const std::string Command::get_comm() const {
+const std::string Request::get_comm() const {
     return _str_command;
 }

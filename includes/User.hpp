@@ -3,15 +3,15 @@
 #include <iostream>
 #include <string>
 
-class Client
+class User
 {
 public:
-    Client();
-    Client(std::string name, std::string nick);
-    Client(const Client &other);
-    ~Client();
+    User();
+    User(std::string name, std::string nick);
+    User(const User &other);
+    ~User();
 
-    Client & operator= (const Client &other);
+    User & operator= (const User &other);
 private:
 //    int fd;
     std::string user_name;

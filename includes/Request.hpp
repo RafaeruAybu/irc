@@ -9,18 +9,18 @@
 #include <vector>
 #include <iterator>
 
-class Command{
+class Request{
 public:
 
-    Command(const std::string buf);
-    Command(const Command &copy);
-    ~Command();
+    Request(const std::string buf);
+    Request(const Request &copy);
+    ~Request();
 
-    Command &operator= (const Command &assign);
+    Request &operator= (const Request &assign);
 
     const std::string get_comm() const;
 private:
-    Command();
+    Request();
 
     std::string _str_command;
     std::vector<std::string> _vect_args;
