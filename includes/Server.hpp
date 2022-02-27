@@ -7,6 +7,7 @@
 #include <map>
 #include "User.hpp"
 #include "Channel.hpp"
+#include "Request.hpp"
 //c headers
 #include <stdio.h>
 #include <unistd.h>
@@ -37,6 +38,8 @@ public:
     void get_into_loop();
     ~Serv();
 
+    int get_user(int fd);
+
 private:
     Serv();
     Serv(const Serv &other);
@@ -49,10 +52,11 @@ private:
     void do_poll_fail();
     void do_poll_default();
     int get_new_connection();
+
     //todo foos
-	response_server pass(int fd_client);
-    void nick();
-    void user();
+    response_server pass(int fd_client, Request comm_exmpl, int index);
+    response_server nick(int fd_client, Request comm_exmpl);
+    response_server user(int fd_client, Request comm_exmpl);
     void delete_user();
     void add_channel();
     void delete_channel();
@@ -67,12 +71,16 @@ private:
     char bufs[MAX_USERS][BUFF_SIZE];    //4 Mb size in stack
     bool exit_server;
     int listen_socket;                  //listening socket
-    std::string str_password; //new 20.02
+    std::string _str_password; //new 20.02
     int password;                       //servers password (PASS 12345678)
     int num;                            //user num including listener
     struct pollfd fd_list[MAX_USERS];   //fd list to poll
-    std::vector<User> users;          //userlist
+    std::vector<User> _users;          //userlist
     std::vector<Channel> channels;      //channels
+
+    ////command utils
+
+
 };
 
 #endif //SERVER_HPP

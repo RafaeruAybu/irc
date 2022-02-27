@@ -33,3 +33,9 @@ Request &Request::operator=(const Request &assign) {
 const std::string Request::get_comm() const {
     return _str_command;
 }
+
+const std::vector<std::string>& Request::get_vect_arg() const {
+    return (_vect_args);
+}
+
+

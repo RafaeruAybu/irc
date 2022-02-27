@@ -19,6 +19,7 @@ public:
     Request &operator= (const Request &assign);
 
     const std::string get_comm() const;
+    const std::vector<std::string>& get_vect_arg() const;
 private:
     Request();
 

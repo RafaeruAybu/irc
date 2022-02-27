@@ -2,6 +2,8 @@
 
 User::User() : user_name("Undefined"), nick("Undefined"), f_logged(0), f_operator(0) {}
 
+User::User(int fd) : user_name("Undefined"), nick("Undefined"), f_logged(0), f_operator(0), _fd(fd)  {}
+
 User::User(std::string name, std::string nick) : user_name(name), nick(nick)
     , f_logged(0), f_operator(0) {}
 
@@ -21,3 +23,10 @@ User & User::operator= (const User &other)
     f_operator = other.f_operator;
     return *this;
 }
+
+const int User::get_fd_user() {
+    return (_fd);
+}
+
+
+

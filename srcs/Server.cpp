@@ -5,7 +5,7 @@
 Serv::Serv(char *port, char *password)
 {
     exit_server = false;
-    str_password = password; //new 20.02
+    _str_password = password; //new 20.02
     this->password = atoi(password);
     listen_socket = get_listen_sock(atoi(port)); //get listen sock
     num = sizeof(fd_list) / sizeof(fd_list[0]); //num of fds
@@ -201,46 +201,76 @@ void Serv::process(int fd, char *buf)
     //
     response_server my_response;
     Request command_exmpl(buf);
-
+    int index_users = get_user(fd); //Ищем в _users совпадение по int fd, костыльно конечно с индексом, но с итератором не заработало
+    std::string response_serv;
 
     //
 
     std::cout << "User[" << fd << "]: " << buf << std::endl;
+
     //todo delete and do it right
 
-    if (command_exmpl.get_comm() == "PASS")
-		my_response = pass(fd);
+    if (command_exmpl.get_comm() == "PASS") {
+        std::cout << "PASS\n";
+        my_response = pass(fd, command_exmpl, index_users);
+    }
     else if (command_exmpl.get_comm() == "NICK")
-		nick();
+        nick(fd, command_exmpl);
     else if (command_exmpl.get_comm() == "USER"){
-		user();
+        user(fd, command_exmpl);
         write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
     }
-//    if (strstr(buf, "USER"))
-//    {
-//        write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
-//    }
+
+    if (my_response.str_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
+        response_serv = my_response.code_response + " : " + my_response.str_response + "\r\n";
+//    std::cout << response_serv << "\n";
+
+//        write(fd, response_serv, response_serv.length()); //todo: как запихать std::string/stream во wtite?
 }
-
-
 
 
 ////// Command_method
 
-response_server Serv::pass(int fd_client){
+response_server Serv::pass(int fd_client, Request comm_exmpl, int index) {
 	response_server res;
-	
-	res.code_response = " ";
-	res.str_response = " ";
-	
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+    if (index != 0){ // уже есть в vector<Users>
+        res.code_response = "462";
+        res.str_response = "ERR_ALREADYREGISTRED";
+    }
+    else if (tmp_arg.size() == 0){ // введен только PASS
+        std::cout << "4\n";
+        res.code_response = "461";
+        res.str_response = "ERR_NEEDMOREPARAMS";
+    }
+    else if (tmp_arg[0] == _str_password || _str_password.length() == 0) { //valid pass
+        _users.push_back(User(fd_client)); // Написан новый конструктор для fd
+        res.code_response = "OK PASS";
+        res.str_response = "OK PASS";
+    }
 	return (res);
 }
 
-void Serv::nick(){
+response_server Serv::nick(int fd_client, Request comm_exmpl) {
 
 }
 
-void Serv::user() {
+response_server Serv::user(int fd_client, Request comm_exmpl) {
 
+}
+
+////command utils
+int Serv::get_user(int fd) {
+    std::vector<User>::iterator iter = _users.begin();
+    std::vector<User>::iterator iter_end = _users.end();
+    int i = 0;
+
+    for (;iter != iter_end; iter++){
+        if (fd == iter->get_fd_user())
+            return (i);
+        i++;
+    }
+    std::cout << i << "\n";
+    return (0);
 }
 
