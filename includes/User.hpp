@@ -13,11 +13,17 @@ public:
     ~User();
 
     User & operator= (const User &other);
-    const int get_fd_user();
+
+    const int getFdUser();
+    const std::string &getNickUser();
+
+    void setNick(std::string nick);
+
+
 private:
     int _fd;
     std::string user_name;
-    std::string nick;
+    std::string _nick;
     std::string flag;
     bool f_logged;
     bool f_operator;

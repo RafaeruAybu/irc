@@ -39,7 +39,9 @@ public:
     void get_into_loop();
     ~Serv();
 
-    User * getUser(int fd);
+    User *getUser(int fd);
+    User *getUser(std::string nick);
+    int checkNick(std::string nick);
 
 private:
     Serv();
@@ -56,8 +58,8 @@ private:
 
     //todo foos
     response_server pass(int fd_client, Request comm_exmpl, User *usr_exmpl);
-    response_server nick(int fd_client, Request comm_exmpl);
-    response_server user(int fd_client, Request comm_exmpl);
+    response_server nick(int fd_client, Request comm_exmpl, User *usr_exmpl);
+    response_server user(int fd_client, Request comm_exmpl, User *usr_exmpl);
     void delete_user();
     void add_channel();
     void delete_channel();

@@ -5,7 +5,7 @@ SRC		=	srcs/main.cpp srcs/Server.cpp srcs/User.cpp srcs/Channel.cpp	\
 
 CXX		= c++
 
-CPPFLAGS	= -std=c++98 #-Wall -Wextra -Werror
+CPPFLAGS	= -g -std=c++98 #-Wall -Wextra -Werror
 
 OBJ		= $(SRC:.cpp=.o)
 

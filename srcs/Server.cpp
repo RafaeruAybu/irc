@@ -204,25 +204,30 @@ void Serv::process(int fd, char *buf)
     User* usr_exmpl = getUser(fd);
 
 //    User* tmp_user = getUser(fd); //Ищем в _users совпадение по int fd, костыльно конечно с индексом, но с итератором не заработало
-    std::string response_serv;
-
-    //
+    std::string response_serv = "";
 
     std::cout << "User[" << fd << "]: " << buf << std::endl;
 
     //todo delete and do it right
 
-    if (command_exmpl.get_comm() == "PASS") {
-        std::cout << "PASS\n";
+    if (command_exmpl.get_comm() == "PASS")
         my_response = pass(fd, command_exmpl, usr_exmpl);
-    }
-    else if (command_exmpl.get_comm() == "NICK")
-        nick(fd, command_exmpl);
-    else if (command_exmpl.get_comm() == "USER"){
-        user(fd, command_exmpl);
-        write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
-    }
+    if (usr_exmpl) { //комманды кроме PASS не обрабатываются, если User не был добавлен через PASS
+        if (command_exmpl.get_comm() == "NICK")
+            my_response = nick(fd, command_exmpl, usr_exmpl);
+        else if (command_exmpl.get_comm() == "USER") {
+            my_response = user(fd, command_exmpl, usr_exmpl);
+//        write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
+        }
+        else if (command_exmpl.get_comm() == "OPER") {}
+        else if (command_exmpl.get_comm() == "QUIT") {}
+        else if (command_exmpl.get_comm() == "PRIVMSG") {}
+        else if (command_exmpl.get_comm() == "NOTICE") {}
+        else if (command_exmpl.get_comm() == "JOIN") {}
+        else if (command_exmpl.get_comm() == "KICK") {}
+        else if (command_exmpl.get_comm() == "MODE") {}
 
+    }
     if (my_response.str_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
         response_serv = my_response.code_response + " : " + my_response.str_response + "\r\n";
 //    std::cout << response_serv << "\n";
@@ -253,11 +258,37 @@ response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 	return (res);
 }
 
-response_server Serv::nick(int fd_client, Request comm_exmpl) {
+response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
+    response_server res;
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+    int check_res = 0;
 
+    if (tmp_arg.size() != 0)
+        check_res = checkNick(tmp_arg[0]);
+//    check_res = checkNick();
+    if (tmp_arg.size() == 0){ // введен только PASS
+        res.code_response = "431";
+        res.str_response = "ERR_NONICKNAMEGIVEN";
+    }
+    else if (!check_res){
+        res.code_response = "432";
+        res.str_response = "ERR_ERRONEUSNICKNAME";
+    }
+    else if (check_res == 1){
+        res.code_response = "433";
+        res.str_response = "ERR_NICKNAMEINUSE";
+    }
+    else{
+        usr_exmpl->setNick(tmp_arg[0]);
+    }
+    return (res);
+    //ERR_NONICKNAMEGIVEN не указан +
+    //ERR_ERRONEUSNICKNAME не валид
+    //ERR_NICKNAMEINUSE уже используется
+    //ERR_NICKCOLLISION уже используется, ответ сервера другому серверу
 }
 
-response_server Serv::user(int fd_client, Request comm_exmpl) {
+response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 
 }
 
@@ -269,9 +300,39 @@ User *Serv::getUser(int fd) {
 
     std::cout << "getUser\n";
     for (;iter != iter_end; iter++){
-        std::cout << "getUser fd=" << fd << ", get_fd=" << (*iter)->get_fd_user() << ", i=" << i << "\n";
-        if (fd == (*iter)->get_fd_user()) {
-            std::cout << "Нашел ! fd = " << (*iter)->get_fd_user() << "\n";
+        std::cout << "getUser fd=" << fd << ", get_fd=" << (*iter)->getFdUser() << ", i=" << i << "\n";
+        if (fd == (*iter)->getFdUser()) {
+            std::cout << "Нашел ! fd = " << (*iter)->getFdUser() << "\n";
+            return (*iter);
+        }
+        i++;
+    }
+    return (NULL);
+}
+
+int Serv::checkNick(std::string nick) {
+    size_t nick_size = nick.size();
+    for (size_t i = 0; i < nick_size; i++) {
+        if ((nick[i] >= 'a' && nick[i] <= 'z') || (nick[i] >= 'A' && nick[i] <= 'Z')
+            || (nick[i] >= '0' && nick[i] <= '9'))
+            continue;
+        else
+            return (0);
+    }
+    if (getUser(nick))
+        return (1);
+    return (2);
+}
+
+User *Serv::getUser(std::string nick) {
+    std::vector<User*>::iterator iter = _users.begin();
+    std::vector<User*>::iterator iter_end = _users.end();
+    int i = 0;
+
+    std::cout << "getUser\n";
+    for (;iter != iter_end; iter++){
+        std::cout << "getUser nick=" << nick << ", get_fd=" << (*iter)->getNickUser() << ", i=" << i << "\n";
+        if (nick == (*iter)->getNickUser()) {
             return (*iter);
         }
         i++;
