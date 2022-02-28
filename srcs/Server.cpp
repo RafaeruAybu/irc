@@ -289,7 +289,12 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 }
 
 response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
+    response_server res;
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
 
+    res.code_response = "001 rafa ";
+    res.str_response = "Welcome to server!!!\r\n";
+    return (res);
 }
 
 ////command utils
