@@ -72,7 +72,7 @@ int Serv::get_listen_sock(int port)
 //todo maybe implement close server
 void Serv::do_poll_timeout()
 {
-    std::cout << "poll timeout..." << std::endl;
+//    std::cout << "poll timeout..." << std::endl; ////Чтоб не спамил)
     // if (fcntl(0, F_SETFL, O_NONBLOCK)) //make new sock is non-blocking
     //             throw "Could not set non-blocking socket...";
     // char server_command_str[50];
@@ -201,7 +201,9 @@ void Serv::process(int fd, char *buf)
     //
     response_server my_response;
     Request command_exmpl(buf);
-    int index_users = get_user(fd); //Ищем в _users совпадение по int fd, костыльно конечно с индексом, но с итератором не заработало
+    User* usr_exmpl = getUser(fd);
+
+//    User* tmp_user = getUser(fd); //Ищем в _users совпадение по int fd, костыльно конечно с индексом, но с итератором не заработало
     std::string response_serv;
 
     //
@@ -212,7 +214,7 @@ void Serv::process(int fd, char *buf)
 
     if (command_exmpl.get_comm() == "PASS") {
         std::cout << "PASS\n";
-        my_response = pass(fd, command_exmpl, index_users);
+        my_response = pass(fd, command_exmpl, usr_exmpl);
     }
     else if (command_exmpl.get_comm() == "NICK")
         nick(fd, command_exmpl);
@@ -224,28 +226,28 @@ void Serv::process(int fd, char *buf)
     if (my_response.str_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
         response_serv = my_response.code_response + " : " + my_response.str_response + "\r\n";
 //    std::cout << response_serv << "\n";
+    write(fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
 
-//        write(fd, response_serv, response_serv.length()); //todo: как запихать std::string/stream во wtite?
 }
 
 
 ////// Command_method
 
-response_server Serv::pass(int fd_client, Request comm_exmpl, int index) {
+response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 	response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
-    if (index != 0){ // уже есть в vector<Users>
+
+    if (usr_exmpl){ // уже есть в vector<Users>
         res.code_response = "462";
         res.str_response = "ERR_ALREADYREGISTRED";
     }
     else if (tmp_arg.size() == 0){ // введен только PASS
-        std::cout << "4\n";
         res.code_response = "461";
         res.str_response = "ERR_NEEDMOREPARAMS";
     }
     else if (tmp_arg[0] == _str_password || _str_password.length() == 0) { //valid pass
-        _users.push_back(User(fd_client)); // Написан новый конструктор для fd
-        res.code_response = "OK PASS";
+        _users.push_back(new User(fd_client)); // Написан новый конструктор для fd
+        res.code_response = "OK PASS"; //todo: for test, need deleted
         res.str_response = "OK PASS";
     }
 	return (res);
@@ -260,17 +262,20 @@ response_server Serv::user(int fd_client, Request comm_exmpl) {
 }
 
 ////command utils
-int Serv::get_user(int fd) {
-    std::vector<User>::iterator iter = _users.begin();
-    std::vector<User>::iterator iter_end = _users.end();
+User *Serv::getUser(int fd) {
+    std::vector<User*>::iterator iter = _users.begin();
+    std::vector<User*>::iterator iter_end = _users.end();
     int i = 0;
 
+    std::cout << "getUser\n";
     for (;iter != iter_end; iter++){
-        if (fd == iter->get_fd_user())
-            return (i);
+        std::cout << "getUser fd=" << fd << ", get_fd=" << (*iter)->get_fd_user() << ", i=" << i << "\n";
+        if (fd == (*iter)->get_fd_user()) {
+            std::cout << "Нашел ! fd = " << (*iter)->get_fd_user() << "\n";
+            return (*iter);
+        }
         i++;
     }
-    std::cout << i << "\n";
-    return (0);
+    return (NULL);
 }
 

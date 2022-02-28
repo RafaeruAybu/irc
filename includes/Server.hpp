@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <map>
 #include "User.hpp"
 #include "Channel.hpp"
 #include "Request.hpp"
@@ -38,7 +39,7 @@ public:
     void get_into_loop();
     ~Serv();
 
-    int get_user(int fd);
+    User * getUser(int fd);
 
 private:
     Serv();
@@ -54,7 +55,7 @@ private:
     int get_new_connection();
 
     //todo foos
-    response_server pass(int fd_client, Request comm_exmpl, int index);
+    response_server pass(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server nick(int fd_client, Request comm_exmpl);
     response_server user(int fd_client, Request comm_exmpl);
     void delete_user();
@@ -75,7 +76,7 @@ private:
     int password;                       //servers password (PASS 12345678)
     int num;                            //user num including listener
     struct pollfd fd_list[MAX_USERS];   //fd list to poll
-    std::vector<User> _users;          //userlist
+    std::vector<User*> _users;          //userlist
     std::vector<Channel> channels;      //channels
 
     ////command utils
