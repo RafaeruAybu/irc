@@ -7,14 +7,16 @@ Request::Request(const std::string buf) : _prefix("") {
     std::vector<std::string> results((std::istream_iterator<std::string>(iss)),
                                      std::istream_iterator<std::string>());
 
-    if (results[0].length() > 0) {
-        if (results[0][0] == ':') {
-            _prefix = std::string(results[0].begin() + 1, results[0].end());
+    if (results.size() > 0) {
+        if (results[0].length() > 0) {
+            if (results[0][0] == ':') {
+                _prefix = std::string(results[0].begin() + 1, results[0].end());
+                results.erase(results.begin());
+            }
+            _str_command = results[0];
+//        std::cout << "Request str_command:" << _str_command << "\n";
             results.erase(results.begin());
         }
-        _str_command = results[0];
-        std::cout << "Request str_command:" << _str_command << "\n";
-        results.erase(results.begin());
     }
     _vect_args = results;
     results.clear();
