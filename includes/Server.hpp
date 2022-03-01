@@ -39,9 +39,7 @@ public:
     void get_into_loop();
     ~Serv();
 
-    User *getUser(int fd);
-    User *getUser(std::string nick);
-    int checkNick(std::string nick);
+
 
 private:
     Serv();
@@ -82,7 +80,11 @@ private:
     std::vector<Channel> channels;      //channels
 
     ////command utils
-
+    User *getUser(int fd);
+    User *getUser(std::string nick);
+    int checkNick(std::string nick);
+    int getCountCommand(char *buf);
+    std::string getTmpBuf(int count, char *buf);
 
 };
 

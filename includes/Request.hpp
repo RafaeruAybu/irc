@@ -24,7 +24,9 @@ private:
     Request();
 
     std::string _str_command;
+    std::string _prefix;
     std::vector<std::string> _vect_args;
+
 };
 
 #endif

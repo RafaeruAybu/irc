@@ -200,38 +200,45 @@ void Serv::process(int fd, char *buf)
 {
     //
     response_server my_response;
-    Request command_exmpl(buf);
+//    Request command_exmpl(buf);
+    Request *command_exmpl;
     User* usr_exmpl = getUser(fd);
+    int count_command;
+    std::string tmp_buf;
 
 //    User* tmp_user = getUser(fd); //Ищем в _users совпадение по int fd, костыльно конечно с индексом, но с итератором не заработало
     std::string response_serv = "";
 
     std::cout << "User[" << fd << "]: " << buf << std::endl;
+    count_command = getCountCommand(buf);
 
     //todo delete and do it right
+//    for (int i = 0; i < count_command; i++) {
+//        tmp_buf = getTmpBuf(i, buf);
+        command_exmpl = new Request(buf); //todo: Поменять на tmp_buf, когда разберусь с несколькими \r\n в строке
+        if (command_exmpl->get_comm() == "PASS")
+            my_response = pass(fd, *command_exmpl, usr_exmpl);
+        else if (command_exmpl->get_comm() == "USER") {
+            my_response = user(fd, *command_exmpl, usr_exmpl);
+        } else if (command_exmpl->get_comm() == "NICK")
+            my_response = nick(fd, *command_exmpl, usr_exmpl);
+        if (usr_exmpl) { //комманды кроме PASS, NICK, USER не обрабатываются, если User не был добавлен через PASS
+            if (command_exmpl->get_comm() == "OPER") {}
+            else if (command_exmpl->get_comm() == "QUIT") {}
+            else if (command_exmpl->get_comm() == "PRIVMSG") {}
+            else if (command_exmpl->get_comm() == "NOTICE") {}
+            else if (command_exmpl->get_comm() == "JOIN") {}
+            else if (command_exmpl->get_comm() == "KICK") {}
+            else if (command_exmpl->get_comm() == "MODE") {}
 
-    if (command_exmpl.get_comm() == "PASS")
-        my_response = pass(fd, command_exmpl, usr_exmpl);
-    if (usr_exmpl) { //комманды кроме PASS не обрабатываются, если User не был добавлен через PASS
-        if (command_exmpl.get_comm() == "NICK")
-            my_response = nick(fd, command_exmpl, usr_exmpl);
-        else if (command_exmpl.get_comm() == "USER") {
-            my_response = user(fd, command_exmpl, usr_exmpl);
-//        write(fd, "001 rafa :Welcome to server!!!\r\n", strlen("001 rafa :Welcome to server!!!\r\n"));
         }
-        else if (command_exmpl.get_comm() == "OPER") {}
-        else if (command_exmpl.get_comm() == "QUIT") {}
-        else if (command_exmpl.get_comm() == "PRIVMSG") {}
-        else if (command_exmpl.get_comm() == "NOTICE") {}
-        else if (command_exmpl.get_comm() == "JOIN") {}
-        else if (command_exmpl.get_comm() == "KICK") {}
-        else if (command_exmpl.get_comm() == "MODE") {}
-
-    }
-    if (my_response.str_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
-        response_serv = my_response.code_response + " : " + my_response.str_response + "\r\n";
+        if (my_response.str_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
+            response_serv = my_response.code_response + " : " + my_response.str_response + "\r\n";
 //    std::cout << response_serv << "\n";
-    write(fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
+        write(fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
+//    }
+
+    //Ответ должен иметь вид ":IRCat 433 dduck dduck :Nickname is already in use"
 
 }
 
@@ -241,6 +248,9 @@ void Serv::process(int fd, char *buf)
 response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 	response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+
+    if ((tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':'))
+        tmp_arg[0].erase(tmp_arg[0].begin());
 
     if (usr_exmpl){ // уже есть в vector<Users>
         res.code_response = "462";
@@ -266,7 +276,7 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     if (tmp_arg.size() != 0)
         check_res = checkNick(tmp_arg[0]);
 //    check_res = checkNick();
-    if (tmp_arg.size() == 0){ // введен только PASS
+    if (tmp_arg.size() == 0){ // введен только NICK
         res.code_response = "431";
         res.str_response = "ERR_NONICKNAMEGIVEN";
     }
@@ -280,9 +290,12 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     }
     else{
         usr_exmpl->setNick(tmp_arg[0]);
+        if (usr_exmpl->getUserUser() != "Undefined")
+            usr_exmpl->setFlagReg();
+
     }
     return (res);
-    //ERR_NONICKNAMEGIVEN не указан +
+    //ERR_NONICKNAMEGIVEN не указан
     //ERR_ERRONEUSNICKNAME не валид
     //ERR_NICKNAMEINUSE уже используется
     //ERR_NICKCOLLISION уже используется, ответ сервера другому серверу
@@ -292,9 +305,54 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
 
-    res.code_response = "001 rafa ";
-    res.str_response = "Welcome to server!!!\r\n";
+    std::cout << "USER\n";
+
+    int count_arg = tmp_arg.size();
+    std::vector<std::string> tmp_usr;
+//    std::string tmp_usrname = "";
+//    std::string tmp_hostname= "";
+//    std::string tmp_servname = "";
+    std::string tmp_realname = "";
+
+
+
+    if (((count_arg >= 4) && (tmp_arg[3][0] != ':')) || (count_arg < 4)){
+        res.code_response = "461";
+        res.str_response = "ERR_NEEDMOREPARAMS";
+    }
+    else if (usr_exmpl->getFlagReg()){
+        res.code_response = "462";
+        res.str_response = "ERR_ALREADYREGISTRED";
+    }
+    else if (count_arg >= 4)
+    {
+        tmp_usr.push_back(tmp_arg[0]);
+        tmp_usr.push_back(tmp_arg[1]);
+        tmp_usr.push_back(tmp_arg[2]);
+
+//        tmp_usrname = tmp_arg[0];
+//        tmp_hostname = tmp_arg[1];
+//        tmp_servname = tmp_arg[2];
+        for (int i = 3; i < count_arg; i++){
+            tmp_realname = tmp_realname + tmp_arg[i];
+            tmp_realname += " ";
+        }
+        tmp_realname.erase(tmp_realname.begin());
+        tmp_realname.erase(tmp_realname.end()); //del last " "
+        std::cout << "tmp_realname: " << tmp_realname << "\n";
+        tmp_usr.push_back(tmp_realname);
+        usr_exmpl->setUserUser(tmp_usr);
+        if (usr_exmpl->getNickUser() != "Undefined") {
+            usr_exmpl->setFlagReg();
+            res.code_response = "001 rafa ";
+            res.str_response = "Welcome to server!!!\r\n";
+        }
+    }
+    //Ответ должен иметь вид ":IRCat 433 dduck dduck :Nickname is already in use"
     return (res);
+
+    //USER guest tolmoon tolsun :Ronnie Reagan kek puk
+    //:testnick USER guest tolmoon tolsun :Ronnie Reagan
 }
 
 ////command utils
@@ -303,11 +361,25 @@ User *Serv::getUser(int fd) {
     std::vector<User*>::iterator iter_end = _users.end();
     int i = 0;
 
-    std::cout << "getUser\n";
     for (;iter != iter_end; iter++){
         std::cout << "getUser fd=" << fd << ", get_fd=" << (*iter)->getFdUser() << ", i=" << i << "\n";
         if (fd == (*iter)->getFdUser()) {
             std::cout << "Нашел ! fd = " << (*iter)->getFdUser() << "\n";
+            return (*iter);
+        }
+        i++;
+    }
+    return (NULL);
+}
+
+User *Serv::getUser(std::string nick) {
+    std::vector<User*>::iterator iter = _users.begin();
+    std::vector<User*>::iterator iter_end = _users.end();
+    int i = 0;
+
+    for (;iter != iter_end; iter++){
+        std::cout << "getUser nick=" << nick << ", get_nick=" << (*iter)->getNickUser() << ", i=" << i << "\n";
+        if (nick == (*iter)->getNickUser()) {
             return (*iter);
         }
         i++;
@@ -329,19 +401,69 @@ int Serv::checkNick(std::string nick) {
     return (2);
 }
 
-User *Serv::getUser(std::string nick) {
-    std::vector<User*>::iterator iter = _users.begin();
-    std::vector<User*>::iterator iter_end = _users.end();
-    int i = 0;
+int Serv::getCountCommand(char *buf) {
+    std::istringstream iss(buf);
+    std::vector<std::string> results((std::istream_iterator<std::string>(iss)),
+                                     std::istream_iterator<std::string>());
 
-    std::cout << "getUser\n";
-    for (;iter != iter_end; iter++){
-        std::cout << "getUser nick=" << nick << ", get_fd=" << (*iter)->getNickUser() << ", i=" << i << "\n";
-        if (nick == (*iter)->getNickUser()) {
-            return (*iter);
-        }
-        i++;
+    size_t size_vect_buf = results.size();
+    int count = 0;
+
+    for (size_t i = 0; i < size_vect_buf; i++){
+        if (results[i].find("\r\n") != std::string::npos)
+            count++;
     }
-    return (NULL);
+    std::cout << "size_vect_buf: " << size_vect_buf << "\n";
+
+    std::cout << "getCountCommand: " << count << "\n";
+    return (count);
 }
+
+std::string Serv::getTmpBuf(int count, char *buf) {
+    std::istringstream iss(buf);
+    std::vector<std::string> results((std::istream_iterator<std::string>(iss)),
+                                     std::istream_iterator<std::string>());
+
+    std::string res = "";
+
+    if (count < 2) {
+        std::cout << "res count=1: " << buf << "\n";
+        return (buf);
+    }
+    else if (count == 2){
+        for (int i = 0; i < results.size(); i++) {
+            if (results[i].find("\r\n") != std::string::npos) {
+                for (int j = i + 1; j < results.size() - 1; j++){
+                    res += results[j] + " ";
+                    if (results[j].find("\r\n") != std::string::npos)
+                        break ;
+                }
+                res.erase(res.end());
+                std::cout << "res count=2: " << res << "\n";
+                return (res);
+            }
+        }
+    }
+    else{
+        for (int i = 0; i < results.size(); i++) {
+            if (results[i].find("\r\n") != std::string::npos) {
+                for (int j = i + 1; j < results.size() - 1; j++){
+                    if (results[j].find("\r\n") != std::string::npos){
+                        for (int k = j + 1; k < results.size() - 2; k++){
+                            res += results[k] + " ";
+                            if (results[k].find("\r\n") != std::string::npos)
+                                break ;
+                        }
+                        res.erase(res.end());
+                        std::cout << "res count=3: " << res << "\n";
+                        return (res);
+                    }
+                }
+            }
+        }
+    }
+    return ("o_O");
+}
+
+
 
