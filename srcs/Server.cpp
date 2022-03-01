@@ -213,9 +213,9 @@ void Serv::process(int fd, char *buf)
     count_command = getCountCommand(buf);
 
     //todo delete and do it right
-//    for (int i = 0; i < count_command; i++) {
-//        tmp_buf = getTmpBuf(i, buf);
-        command_exmpl = new Request(buf); //todo: Поменять на tmp_buf, когда разберусь с несколькими \r\n в строке
+    for (int i = 0; i < count_command; i++) {
+        tmp_buf = getTmpBuf(i, buf);
+        command_exmpl = new Request(tmp_buf); //todo: Поменять на tmp_buf, когда разберусь с несколькими \r\n в строке
         if (command_exmpl->get_comm() == "PASS")
             my_response = pass(fd, *command_exmpl, usr_exmpl);
         else if (command_exmpl->get_comm() == "USER") {
@@ -236,7 +236,7 @@ void Serv::process(int fd, char *buf)
             response_serv = my_response.code_response + " : " + my_response.str_response + "\r\n";
 //    std::cout << response_serv << "\n";
         write(fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
-//    }
+    }
 
     //Ответ должен иметь вид ":IRCat 433 dduck dduck :Nickname is already in use"
 
@@ -248,6 +248,8 @@ void Serv::process(int fd, char *buf)
 response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 	response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+
+    std::cout << "PASS\n";
 
     if ((tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':'))
         tmp_arg[0].erase(tmp_arg[0].begin());
@@ -272,6 +274,8 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     int check_res = 0;
+
+    std::cout << "NICK\n";
 
     if (tmp_arg.size() != 0)
         check_res = checkNick(tmp_arg[0]);
@@ -313,8 +317,6 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 //    std::string tmp_hostname= "";
 //    std::string tmp_servname = "";
     std::string tmp_realname = "";
-
-
 
     if (((count_arg >= 4) && (tmp_arg[3][0] != ':')) || (count_arg < 4)){
         res.code_response = "461";
@@ -402,20 +404,18 @@ int Serv::checkNick(std::string nick) {
 }
 
 int Serv::getCountCommand(char *buf) {
-    std::istringstream iss(buf);
-    std::vector<std::string> results((std::istream_iterator<std::string>(iss)),
-                                     std::istream_iterator<std::string>());
-
-    size_t size_vect_buf = results.size();
     int count = 0;
+    std::istringstream iss(buf);
+    std::string str(buf);
 
-    for (size_t i = 0; i < size_vect_buf; i++){
-        if (results[i].find("\r\n") != std::string::npos)
+    for (int i = 0; i < str.length(); i++){
+//        std::cout << "str[" << i << "]: " << str[i] << "\n";
+        if (str[i] == '\n')
             count++;
     }
-    std::cout << "size_vect_buf: " << size_vect_buf << "\n";
-
+//    std::cout << "length: " << str.length() << "\n";
     std::cout << "getCountCommand: " << count << "\n";
+//    std::cout << "str: " << str << "\n";
     return (count);
 }
 
@@ -427,31 +427,31 @@ std::string Serv::getTmpBuf(int count, char *buf) {
     std::string res = "";
 
     if (count < 2) {
-        std::cout << "res count=1: " << buf << "\n";
+        std::cout << "res count=1: " << buf << '\n';
         return (buf);
     }
     else if (count == 2){
         for (int i = 0; i < results.size(); i++) {
-            if (results[i].find("\r\n") != std::string::npos) {
+            if (results[i].find('\n') != std::string::npos) {
                 for (int j = i + 1; j < results.size() - 1; j++){
                     res += results[j] + " ";
-                    if (results[j].find("\r\n") != std::string::npos)
+                    if (results[j].find('\n') != std::string::npos)
                         break ;
                 }
                 res.erase(res.end());
-                std::cout << "res count=2: " << res << "\n";
+                std::cout << "res count=2: " << res << '\n';
                 return (res);
             }
         }
     }
     else{
         for (int i = 0; i < results.size(); i++) {
-            if (results[i].find("\r\n") != std::string::npos) {
+            if (results[i].find('\n') != std::string::npos) {
                 for (int j = i + 1; j < results.size() - 1; j++){
-                    if (results[j].find("\r\n") != std::string::npos){
+                    if (results[j].find('\n') != std::string::npos){
                         for (int k = j + 1; k < results.size() - 2; k++){
                             res += results[k] + " ";
-                            if (results[k].find("\r\n") != std::string::npos)
+                            if (results[k].find('\n') != std::string::npos)
                                 break ;
                         }
                         res.erase(res.end());
