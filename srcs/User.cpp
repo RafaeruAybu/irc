@@ -85,6 +85,8 @@ void User::sendSTDReplay(std::string code, std::string text) {
 
 int User::sendPrivMSG(Request comm_exmpl, std::string sender) {
     std::string replay;
+    std::string replay2;
+
 
 
     size_t size_vect_arg = comm_exmpl.get_vect_arg().size();
@@ -93,19 +95,24 @@ int User::sendPrivMSG(Request comm_exmpl, std::string sender) {
     vect_arg = comm_exmpl.get_vect_arg();
 
     replay = sender + " " + comm_exmpl.get_comm();
-
+    replay2 = ":IRC 303 " + _nick + " : " + sender + "\r\n";
 
     if (!_flag_away) {
         for (size_t i = 0; i < size_vect_arg; i++){
             replay += (" " + vect_arg[i]);
         }
-        replay += "\n";
+        replay += "'\r\n";
+        std::cout << "replay2:" << replay2;
         std::cout << "replay:" << replay;
+
+        write(_fd, replay2.c_str(), replay2.length());
         write(_fd, replay.c_str(), replay.length());
         return (1);
     }
     else
         return (0);
+
+    //:IRC 303 oper : dduck
     //dduck!Adium@127.0.0.1 PRIVMSG oper :Tut? Horoshiy chelobek?
     //oper PRIVMSG dduck :Ent
 }
