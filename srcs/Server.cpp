@@ -238,7 +238,9 @@ void Serv::process(int fd, char *buf)
         } else if (command_exmpl->get_comm() == "NICK")
             my_response = nick(fd, *command_exmpl, usr_exmpl);
         if (usr_exmpl) { //комманды кроме PASS, NICK, USER не обрабатываются, если User не был добавлен через PASS
-            if ((command_exmpl->get_comm() == "NOTICE") || (command_exmpl->get_comm() == "PRIVMSG")) {} //AWAY не делаем, поэтому работают одинаково
+            if ((command_exmpl->get_comm() == "NOTICE") || (command_exmpl->get_comm() == "PRIVMSG")) { //AWAY не делаем, поэтому работают одинаково, кроме отправки ответа
+                my_response = privmsg(fd, *command_exmpl, usr_exmpl);
+            }
             else if (command_exmpl->get_comm() == "JOIN") {} //Минимум
             else if (command_exmpl->get_comm() == "OPER") {}
             else if (command_exmpl->get_comm() == "QUIT") {}
@@ -387,6 +389,8 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     std::string text_message;
+    std::string reciever;
+    User *usr_reciever;
 
     std::cout << "*PRIVMSG\n";
 
@@ -400,16 +404,27 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
         }
         return (res);
     }
-//    else if(tmp_arg[1].size() > 2 && tmp_arg[1][0] != ':')
+    else
+        text_message = getMessage(tmp_arg);
 
+    std::cout << "text PRVMSG:" << text_message << "\n";
 
-//    text_message = getMessage(tmp_arg)
+    reciever = tmp_arg[0];
+    if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал
 
-
-
-
-
-
+    }
+    else{
+        usr_reciever = getUser(reciever);
+        if (!usr_reciever){
+            res.code_response = "401";
+            res.str_response = "ERR_NOSUCHNICK";
+        }
+        else{
+            usr_reciever->sendPrivMSG(comm_exmpl, usr_exmpl->getNickUser());
+            res.code_response = "303";
+            res.str_response = reciever;
+        }
+    }
 
     /*
      * PRIVMSG Angel :yes I'm receiving it !receiving it !'u>(768u+1n) .br
@@ -516,17 +531,23 @@ std::string Serv::getTmpBuf(int count, char *buf) {
     return ("o_O");
 }
 
-//std::string Serv::getMessage(std::vector<std::string> vect_arg) {
-//
-//    size_t pos;
-////    std::string str(vect_arg);
-//    std::string res;
-//
-//    if (str.find(':') != std::string::npos){
-//        pos = str.find(':');
-//        res = str.substr(pos + 1);
-//        return (res);
-//    }
-//    else
-//        return ("NODV");
-//}
+std::string Serv::getMessage(std::vector<std::string> vect_arg) {
+
+    int flag_mnogo = 0;
+    std::string res = "";
+
+    if (vect_arg.size() > 1)
+        flag_mnogo = 1;
+
+    if(vect_arg[1].size() > 0 && vect_arg[1][0] != ':')
+        return vect_arg[1];
+    else{
+        for (size_t i = 1; i < vect_arg.size(); i++){
+            res += vect_arg[i] + " ";
+        }
+        if (flag_mnogo)
+            res.erase(res.end() - 1);
+        res.erase(res.begin());
+        return (res);
+    }
+}

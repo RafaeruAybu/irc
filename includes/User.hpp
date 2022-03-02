@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unistd.h>
+#include "Request.hpp"
 //#include "Server.hpp"
 
 //response_server;
@@ -31,6 +32,7 @@ public:
 
     void sendMTD();
     void sendSTDReplay(std::string code, std::string text);
+    int sendPrivMSG(Request comm_exmpl, std::string sender);
 
 private:
     User();
@@ -44,6 +46,7 @@ private:
 
     int _flag_reg;
     int _flag_operator;
+    int _flag_away;
     std::string flag;
     bool f_logged;
     bool f_operator;

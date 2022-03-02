@@ -1,8 +1,8 @@
 #include "../includes/User.hpp"
 
-User::User() : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(0), _flag_reg(0), _flag_operator(0), _host_name(""), _servername(""), _realname("")   {}
+User::User() : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(0), _flag_reg(0), _flag_operator(0), _flag_away(0), _host_name(""), _servername(""), _realname("")   {}
 
-User::User(int fd) : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(fd), _flag_reg(0), _flag_operator(0), _host_name(""), _servername(""), _realname("")  {}
+User::User(int fd) : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(fd), _flag_reg(0), _flag_operator(0), _flag_away(0), _host_name(""), _servername(""), _realname("")  {}
 
 //User::User(std::string name, std::string nick) : _user_name(name), _nick(nick), f_logged(0), f_operator(0) {}
 
@@ -81,6 +81,33 @@ void User::sendSTDReplay(std::string code, std::string text) {
 //    response_serv = my_response.code_response + " : " + my_response.str_response + "\r\n";
 //    std::cout << response_serv << "\n";
     write(_fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
+}
+
+int User::sendPrivMSG(Request comm_exmpl, std::string sender) {
+    std::string replay;
+
+
+    size_t size_vect_arg = comm_exmpl.get_vect_arg().size();
+    std::vector<std::string> vect_arg;
+
+    vect_arg = comm_exmpl.get_vect_arg();
+
+    replay = sender + " " + comm_exmpl.get_comm();
+
+
+    if (!_flag_away) {
+        for (size_t i = 0; i < size_vect_arg; i++){
+            replay += (" " + vect_arg[i]);
+        }
+        replay += "\n";
+        std::cout << "replay:" << replay;
+        write(_fd, replay.c_str(), replay.length());
+        return (1);
+    }
+    else
+        return (0);
+    //dduck!Adium@127.0.0.1 PRIVMSG oper :Tut? Horoshiy chelobek?
+    //oper PRIVMSG dduck :Ent
 }
 
 
