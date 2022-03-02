@@ -3,11 +3,16 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <unistd.h>
+//#include "Server.hpp"
+
+//response_server;
+
+class Serv;
 
 class User
 {
 public:
-    User();
     User(int fd);
 //    User(std::string name, std::string nick);
     User(const User &other);
@@ -24,7 +29,12 @@ public:
     void setFlagReg();
     void setUserUser(std::vector<std::string> tmp_usr);
 
+    void sendMTD();
+    void sendSTDReplay(std::string code, std::string text);
+
 private:
+    User();
+
     int _fd;
     std::string _user_name;
     std::string _nick;
@@ -33,6 +43,7 @@ private:
     std::string _realname;
 
     int _flag_reg;
+    int _flag_operator;
     std::string flag;
     bool f_logged;
     bool f_operator;

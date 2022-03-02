@@ -6,6 +6,9 @@ Serv::Serv(char *port, char *password)
 {
     exit_server = false;
     _str_password = password; //new 20.02
+    _oper_user = "dduk";
+    _oper_pass = "kudd";
+
     this->password = atoi(password);
     listen_socket = get_listen_sock(atoi(port)); //get listen sock
     num = sizeof(fd_list) / sizeof(fd_list[0]); //num of fds
@@ -159,6 +162,10 @@ void Serv::do_poll_default()
             else if (s == 0)
             {
                 std::cout << "client quit..." << std::endl;
+//                std::cout << "fd quit:" <<  fd_list[i].fd << "\n";
+//                delete getUser(fd_list[i].fd);
+                if (getUserIter(fd_list[i].fd) != _users.end())
+                    _users.erase((getUserIter(fd_list[i].fd)));
                 close(fd_list[i].fd);
                 fd_list[i].fd = -1;
                 break;   //todo test
@@ -205,9 +212,10 @@ void Serv::process(int fd, char *buf)
     User* usr_exmpl = getUser(fd);
     int count_command;
     std::string tmp_buf;
+    std::string response_serv = "";
 
 //    User* tmp_user = getUser(fd); //Ищем в _users совпадение по int fd, костыльно конечно с индексом, но с итератором не заработало
-    std::string response_serv = "";
+
 
     std::cout << "User[" << fd << "]: " << buf << std::endl;
     count_command = getCountCommand(buf);
@@ -215,8 +223,13 @@ void Serv::process(int fd, char *buf)
     //todo delete and do it right
     for (int i = 0; i < count_command; i++) {
         tmp_buf = getTmpBuf(i, buf);
-        std::cout << "tmp_buf " << i << tmp_buf << '\n';
+//        std::cout << "tmp_buf " << i << tmp_buf << '\n';
         usr_exmpl = getUser(fd);
+
+        if (!usr_exmpl)
+            std::cout << "user NONE\n";
+        else
+            std::cout << "user[" << usr_exmpl->getFdUser() << "], nick='" << usr_exmpl->getNickUser() << "', username '" << usr_exmpl->getUserUser() << "'\n";
         command_exmpl = new Request(tmp_buf); //todo: Поменять на tmp_buf, когда разберусь с несколькими \r\n в строке
         if (command_exmpl->get_comm() == "PASS")
             my_response = pass(fd, *command_exmpl, usr_exmpl);
@@ -225,19 +238,18 @@ void Serv::process(int fd, char *buf)
         } else if (command_exmpl->get_comm() == "NICK")
             my_response = nick(fd, *command_exmpl, usr_exmpl);
         if (usr_exmpl) { //комманды кроме PASS, NICK, USER не обрабатываются, если User не был добавлен через PASS
-            if (command_exmpl->get_comm() == "OPER") {}
+            if ((command_exmpl->get_comm() == "NOTICE") || (command_exmpl->get_comm() == "PRIVMSG")) {} //AWAY не делаем, поэтому работают одинаково
+            else if (command_exmpl->get_comm() == "JOIN") {} //Минимум
+            else if (command_exmpl->get_comm() == "OPER") {}
             else if (command_exmpl->get_comm() == "QUIT") {}
-            else if (command_exmpl->get_comm() == "PRIVMSG") {}
-            else if (command_exmpl->get_comm() == "NOTICE") {}
-            else if (command_exmpl->get_comm() == "JOIN") {}
             else if (command_exmpl->get_comm() == "KICK") {}
             else if (command_exmpl->get_comm() == "MODE") {}
 
         }
         if (my_response.str_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
-            response_serv = my_response.code_response + " : " + my_response.str_response + "\r\n";
-//    std::cout << response_serv << "\n";
-        write(fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
+            usr_exmpl->sendSTDReplay(my_response.code_response, my_response.str_response);
+
+//        write(fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
         delete command_exmpl;
         my_response.code_response.clear();
         my_response.str_response.clear();
@@ -271,8 +283,8 @@ response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     }
     else if (tmp_arg[0] == _str_password || _str_password.length() == 0) { //valid pass
         _users.push_back(new User(fd_client)); // Написан новый конструктор для fd
-        res.code_response = "OK PASS"; //todo: for test, need deleted
-        res.str_response = "OK PASS";
+//        res.code_response = "OK PASS"; //todo: for test, need deleted
+//        res.str_response = "OK PASS";
     }
 	return (res);
 }
@@ -308,8 +320,9 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
         usr_exmpl->setNick(tmp_arg[0]);
         if (usr_exmpl->getUserUser() != "Undefined") {
             usr_exmpl->setFlagReg();
-            res.code_response = "001 rafa ";
-            res.str_response = "Welcome to server!!!\r\n";
+            usr_exmpl->sendMTD();
+//            res.code_response = "001 rafa ";
+//            res.str_response = "Welcome to server!!!\r\n";
         }
 
     }
@@ -361,14 +374,16 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
         tmp_realname.erase(tmp_realname.end()); //del last " "
 //        std::cout << "tmp_realname: " << tmp_realname << "\n";
         tmp_usr.push_back(tmp_realname);
-        usr_exmpl->setUserUser(tmp_usr);
+        if (usr_exmpl->getUserUser() == "Undefined")
+            usr_exmpl->setUserUser(tmp_usr);
         if (usr_exmpl->getNickUser() != "Undefined") {
             usr_exmpl->setFlagReg();
-            res.code_response = "001 rafa ";
-            res.str_response = "Welcome to server!!!\r\n";
+            usr_exmpl->sendMTD();
+
+//            res.code_response = "001 rafa ";
+//            res.str_response = "Welcome to server!!!\r\n";
         }
     }
-    //Ответ должен иметь вид ":IRCat 433 dduck dduck :Nickname is already in use"
     return (res);
 
     //USER guest tolmoon tolsun :Ronnie Reagan kek puk
@@ -379,35 +394,38 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 User *Serv::getUser(int fd) {
     std::vector<User*>::iterator iter = _users.begin();
     std::vector<User*>::iterator iter_end = _users.end();
-    int i = 0;
 
     for (;iter != iter_end; iter++){
-//        std::cout << "getUser fd=" << fd << ", get_fd=" << (*iter)->getFdUser() << ", i=" << i << "\n";
-        if (fd == (*iter)->getFdUser()) {
-//            std::cout << "Нашел ! fd = " << (*iter)->getFdUser() << "\n";
+        if (fd == (*iter)->getFdUser())
             return (*iter);
-        }
-        i++;
     }
     return (NULL);
 }
+
 
 User *Serv::getUser(std::string nick) {
     std::vector<User*>::iterator iter = _users.begin();
     std::vector<User*>::iterator iter_end = _users.end();
-    int i = 0;
 
     for (;iter != iter_end; iter++){
-//        std::cout << "getUser nick=" << nick << ", get_nick=" << (*iter)->getNickUser() << ", i=" << i << "\n";
-        if (nick == (*iter)->getNickUser()) {
+        if (nick == (*iter)->getNickUser())
             return (*iter);
-        }
-        i++;
     }
     return (NULL);
 }
 
-int Serv::checkNick(std::string nick) {
+std::vector<User *>::iterator Serv::getUserIter(int fd) {
+    std::vector<User*>::iterator iter = _users.begin();
+    std::vector<User*>::iterator iter_end = _users.end();
+
+    for (;iter != iter_end; iter++){
+        if (fd == (*iter)->getFdUser())
+            return (iter);
+    }
+    return (iter);
+}
+
+int Serv::checkNick(std::string nick) { //Проверка валидности nick
     size_t nick_size = nick.size();
     for (size_t i = 0; i < nick_size; i++) {
         if ((nick[i] >= 'a' && nick[i] <= 'z') || (nick[i] >= 'A' && nick[i] <= 'Z')
@@ -416,7 +434,7 @@ int Serv::checkNick(std::string nick) {
         else
             return (0);
     }
-    if (getUser(nick))
+    if (getUser(nick)) //nick уже используется
         return (1);
     return (2);
 }
@@ -427,13 +445,9 @@ int Serv::getCountCommand(char *buf) {
     std::string str(buf);
 
     for (int i = 0; i < str.length(); i++){
-//        std::cout << "str[" << i << "]: " << str[i] << "\n";
         if (str[i] == '\n')
             count++;
     }
-//    std::cout << "length: " << str.length() << "\n";
-//    std::cout << "getCountCommand: " << count << "\n";
-//    std::cout << "str: " << str << "\n";
     return (count);
 }
 
@@ -446,16 +460,12 @@ std::string Serv::getTmpBuf(int count, char *buf) {
     std::string tmp_res = "";
     size_t pos;
 
-//    std::cout << "count= " << count << "\n";
-
     while (res.find("\r\n") != std::string::npos)
         res.replace(res.find("\r\n"), 2, "\n");
 
     if (count == 0){
         pos = res.find('\n');
         res.erase(pos);
-        std::cout << "res_buf 0= " << res << "\n";
-
         return (res);
     }
     else if (count == 1){
@@ -463,8 +473,6 @@ std::string Serv::getTmpBuf(int count, char *buf) {
         tmp_res = res.substr(pos + 1);
         pos = tmp_res.find('\n');
         tmp_res.erase(pos);
-        std::cout << "res_buf 1= " << tmp_res << "\n";
-
         return (tmp_res);
     }
     else if (count == 2) {
@@ -473,12 +481,14 @@ std::string Serv::getTmpBuf(int count, char *buf) {
         pos = tmp_res.find('\n');
         res.clear();
         res = tmp_res.substr(pos + 1);
-        std::cout << "res_buf 2= " << res << "\n";
-
         return (res);
     }
     return ("o_O");
 }
+
+
+
+
 
 
 

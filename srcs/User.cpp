@@ -1,15 +1,21 @@
 #include "../includes/User.hpp"
 
-User::User() : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(0), _flag_reg(0), _host_name(""), _servername(""), _realname("")   {}
+User::User() : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(0), _flag_reg(0), _flag_operator(0), _host_name(""), _servername(""), _realname("")   {}
 
-User::User(int fd) : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(fd), _flag_reg(0), _host_name(""), _servername(""), _realname("")  {}
+User::User(int fd) : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(fd), _flag_reg(0), _flag_operator(0), _host_name(""), _servername(""), _realname("")  {}
 
 //User::User(std::string name, std::string nick) : _user_name(name), _nick(nick), f_logged(0), f_operator(0) {}
 
 User::User(const User &other) : _user_name(other._user_name), _nick(other._nick)
     , f_logged(other.f_logged), f_operator(other.f_operator) {}
 
-User::~User() {}
+User::~User() {
+    std::cout << "Destruct User\n";
+    _fd = 0;
+    _user_name.clear();
+    _nick.clear();
+    _servername.clear();
+}
 
 User & User::operator= (const User &other)
 {
@@ -52,6 +58,29 @@ void User::setUserUser(std::vector<std::string> tmp_usr) {
 
 const int User::getFlagReg() {
     return (_flag_reg);
+}
+
+void User::sendMTD() {
+
+    std::string mes_375 = ":IRC 375 " + _nick + " :- IRC Message of the day -\r\n";
+    std::string mes_372 = ":IRC 372 " + _nick + " :- IRC Welcome to server!!!\r\n";
+    std::string mes_376 = ":IRC 376 " + _nick + " :End of /MOTD command\r\n";
+
+//    std::cout << "fd sendMTD:" << _fd << "\n";
+
+    write(_fd, mes_375.c_str(), mes_375.length());
+    write(_fd, mes_372.c_str(), mes_372.length());
+    write(_fd, mes_376.c_str(), mes_376.length());
+}
+
+void User::sendSTDReplay(std::string code, std::string text) {
+
+    std::string response_serv = ":IRC " + code + " " + getNickUser() + " : " + text + "\r\n";
+
+
+//    response_serv = my_response.code_response + " : " + my_response.str_response + "\r\n";
+//    std::cout << response_serv << "\n";
+    write(_fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
 }
 
 

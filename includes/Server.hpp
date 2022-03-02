@@ -1,9 +1,10 @@
 #ifndef SERVER_HPP
-#define SERVER_HPP
+# define SERVER_HPP
 //cpp headers
 #include <iostream>
 #include <string>
 #include <vector>
+#include <iterator>
 #include <map>
 #include <map>
 #include "User.hpp"
@@ -72,6 +73,7 @@ private:
     char bufs[MAX_USERS][BUFF_SIZE];    //4 Mb size in stack
     bool exit_server;
     int listen_socket;                  //listening socket
+
     std::string _str_password; //new 20.02
     int password;                       //servers password (PASS 12345678)
     int num;                            //user num including listener
@@ -79,8 +81,12 @@ private:
     std::vector<User*> _users;          //userlist
     std::vector<Channel> channels;      //channels
 
+    std::string _oper_user;
+    std::string _oper_pass;
+
     ////command utils
     User *getUser(int fd);
+    std::vector<User*>::iterator getUserIter(int fd);
     User *getUser(std::string nick);
     int checkNick(std::string nick);
     int getCountCommand(char *buf);
