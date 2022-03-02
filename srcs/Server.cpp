@@ -256,9 +256,7 @@ void Serv::process(int fd, char *buf)
         response_serv.clear();
 
     }
-
     //Ответ должен иметь вид ":IRCat 433 dduck dduck :Nickname is already in use"
-
 }
 
 
@@ -283,8 +281,6 @@ response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     }
     else if (tmp_arg[0] == _str_password || _str_password.length() == 0) { //valid pass
         _users.push_back(new User(fd_client)); // Написан новый конструктор для fd
-//        res.code_response = "OK PASS"; //todo: for test, need deleted
-//        res.str_response = "OK PASS";
     }
 	return (res);
 }
@@ -379,16 +375,50 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
         if (usr_exmpl->getNickUser() != "Undefined") {
             usr_exmpl->setFlagReg();
             usr_exmpl->sendMTD();
-
-//            res.code_response = "001 rafa ";
-//            res.str_response = "Welcome to server!!!\r\n";
         }
     }
     return (res);
-
-    //USER guest tolmoon tolsun :Ronnie Reagan kek puk
-    //:testnick USER guest tolmoon tolsun :Ronnie Reagan
 }
+
+
+//Реализация без списков отправки, только одному каналу или юзеру
+//# - отправка в канал
+response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl) {
+    response_server res;
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+    std::string text_message;
+
+    std::cout << "*PRIVMSG\n";
+
+    if (tmp_arg.size() < 2) {
+        if (tmp_arg.size() == 0) {
+            res.code_response = "411";
+            res.str_response = "ERR_NORECIPIENT";
+        } else if (tmp_arg.size() == 1) {
+            res.code_response = "412";
+            res.str_response = "ERR_NOTEXTTOSEND";
+        }
+        return (res);
+    }
+//    else if(tmp_arg[1].size() > 2 && tmp_arg[1][0] != ':')
+
+
+//    text_message = getMessage(tmp_arg)
+
+
+
+
+
+
+
+    /*
+     * PRIVMSG Angel :yes I'm receiving it !receiving it !'u>(768u+1n) .br
+    // Сообщение к Angel;
+     */
+
+    return (res);
+}
+
 
 ////command utils
 User *Serv::getUser(int fd) {
@@ -486,9 +516,17 @@ std::string Serv::getTmpBuf(int count, char *buf) {
     return ("o_O");
 }
 
-
-
-
-
-
-
+//std::string Serv::getMessage(std::vector<std::string> vect_arg) {
+//
+//    size_t pos;
+////    std::string str(vect_arg);
+//    std::string res;
+//
+//    if (str.find(':') != std::string::npos){
+//        pos = str.find(':');
+//        res = str.substr(pos + 1);
+//        return (res);
+//    }
+//    else
+//        return ("NODV");
+//}

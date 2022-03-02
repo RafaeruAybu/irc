@@ -59,6 +59,8 @@ private:
     response_server pass(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server nick(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server user(int fd_client, Request comm_exmpl, User *usr_exmpl);
+    response_server privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl);
+
     void delete_user();
     void add_channel();
     void delete_channel();
@@ -91,6 +93,7 @@ private:
     int checkNick(std::string nick);
     int getCountCommand(char *buf);
     std::string getTmpBuf(int count, char *buf);
+    std::string getMessage(std::vector<std::string> vect_arg);
 
 };
 
