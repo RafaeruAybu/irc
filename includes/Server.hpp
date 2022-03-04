@@ -60,6 +60,8 @@ private:
     response_server nick(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server user(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl);
+    response_server notice(int fd_client, Request comm_exmpl, User *usr_exmpl);
+
 
     void delete_user();
     void add_channel();

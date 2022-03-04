@@ -75,7 +75,6 @@ void User::sendMTD() {
     write(_fd, mes_372.c_str(), mes_372.length());
     write(_fd, mes_376.c_str(), mes_376.length());
 
-
 }
 
 void User::sendSTDReplay(std::string code, std::string text) {

@@ -238,8 +238,11 @@ void Serv::process(int fd, char *buf)
         } else if (command_exmpl->get_comm() == "NICK")
             my_response = nick(fd, *command_exmpl, usr_exmpl);
         if (usr_exmpl) { //комманды кроме PASS, NICK, USER не обрабатываются, если User не был добавлен через PASS
-            if ((command_exmpl->get_comm() == "NOTICE") || (command_exmpl->get_comm() == "PRIVMSG")) { //AWAY не делаем, поэтому работают одинаково, кроме отправки ответа
+            if (command_exmpl->get_comm() == "PRIVMSG") { //AWAY не делаем
                 my_response = privmsg(fd, *command_exmpl, usr_exmpl);
+            }
+            else if(command_exmpl->get_comm() == "NOTICE"){
+                my_response = notice(fd, *command_exmpl, usr_exmpl);
             }
             else if (command_exmpl->get_comm() == "JOIN") {} //Минимум
             else if (command_exmpl->get_comm() == "OPER") {}
@@ -248,7 +251,7 @@ void Serv::process(int fd, char *buf)
             else if (command_exmpl->get_comm() == "MODE") {}
 
         }
-        if (my_response.str_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
+        if (my_response.code_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
             usr_exmpl->sendSTDReplay(my_response.code_response, my_response.str_response);
 
 //        write(fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
@@ -388,7 +391,7 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
-    std::string text_message;
+//    std::string text_message;
     std::string reciever;
     User *usr_reciever;
 
@@ -431,6 +434,38 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
     // Сообщение к Angel;
      */
 
+    return (res);
+}
+
+
+response_server Serv::notice(int fd_client, Request comm_exmpl, User *usr_exmpl) {
+    response_server res;
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+    std::string reciever;
+    User *usr_reciever;
+
+//    std::cout << "*NOTICE\n";
+
+    if (tmp_arg.size() < 2) {
+        if (tmp_arg.size() == 0) {
+            res.code_response = "";
+        } else if (tmp_arg.size() == 1) {
+            res.code_response = "";
+        }
+        return (res);
+    }
+
+    reciever = tmp_arg[0];
+    if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал('#' в nick не пройдет валидацию)
+
+    }
+    else{
+        usr_reciever = getUser(reciever);
+        if (usr_reciever){
+            usr_reciever->sendPrivMSG(comm_exmpl, usr_exmpl->getNickUser());
+        }
+
+    }
     return (res);
 }
 
@@ -551,3 +586,5 @@ std::string Serv::getMessage(std::vector<std::string> vect_arg) {
         return (res);
     }
 }
+
+
