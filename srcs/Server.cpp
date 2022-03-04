@@ -273,14 +273,14 @@ response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 
 //    std::cout << "*PASS\n";
 
-//    if ((tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':')) //Удаление ':', но не помню зачем
-//        tmp_arg[0].erase(tmp_arg[0].begin());
+    if ((tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':')) //Удаление ':' для Adium
+        tmp_arg[0].erase(tmp_arg[0].begin());
 
 
     if (tmp_arg.size() == 0){ // введен только PASS
         sendNoUser(fd_client, "461", "ERR_NEEDMOREPARAMS");
     }
-    else if (usr_exmpl->getFlagReg() && usr_exmpl){ // уже есть в vector<Users>
+    else if (usr_exmpl && usr_exmpl->getFlagReg()){ // уже есть в vector<Users>
         res.code_response = "462";
         res.str_response = "PASS ERR_ALREADYREGISTRED";
     }
