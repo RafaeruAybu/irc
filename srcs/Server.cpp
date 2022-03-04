@@ -273,16 +273,16 @@ response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 
 //    std::cout << "*PASS\n";
 
-    if ((tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':'))
-        tmp_arg[0].erase(tmp_arg[0].begin());
+//    if ((tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':')) //Удаление ':', но не помню зачем
+//        tmp_arg[0].erase(tmp_arg[0].begin());
 
-    if (usr_exmpl){ // уже есть в vector<Users>
+
+    if (tmp_arg.size() == 0){ // введен только PASS
+        sendNoUser(fd_client, "461", "ERR_NEEDMOREPARAMS");
+    }
+    else if (usr_exmpl->getFlagReg() && usr_exmpl){ // уже есть в vector<Users>
         res.code_response = "462";
         res.str_response = "PASS ERR_ALREADYREGISTRED";
-    }
-    else if (tmp_arg.size() == 0){ // введен только PASS
-        res.code_response = "461";
-        res.str_response = "ERR_NEEDMOREPARAMS";
     }
     else if (tmp_arg[0] == _str_password || _str_password.length() == 0) { //valid pass
         _users.push_back(new User(fd_client)); // Написан новый конструктор для fd
@@ -356,7 +356,7 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     }
     else if (usr_exmpl->getFlagReg()){
         res.code_response = "462";
-        res.str_response = "USER ERR_ALREADYREGISTRED";
+        res.str_response = "ERR_ALREADYREGISTRED";
     }
     else if (count_arg >= 4)
     {
@@ -379,6 +379,8 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
             usr_exmpl->setUserUser(tmp_usr);
         if (usr_exmpl->getNickUser() != "Undefined") {
             usr_exmpl->setFlagReg();
+            res.code_response = "001";
+            res.str_response = "RPL_WELCOME";
             usr_exmpl->sendMTD();
         }
     }
@@ -585,6 +587,11 @@ std::string Serv::getMessage(std::vector<std::string> vect_arg) {
         res.erase(res.begin());
         return (res);
     }
+}
+
+void Serv::sendNoUser(int fd, std::string code, std::string text) {
+        std::string response_serv = ":IRC " + code + " " + " : " + text + "\r\n";
+        write(fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
 }
 
 

@@ -65,12 +65,10 @@ void User::sendMTD() {
     std::string mes_375 = ":IRC 375 " + _nick + " :- IRC Message of the day -\r\n";
     std::string mes_372 = ":IRC 372 " + _nick + " :- IRC Welcome to server!!!\r\n";
     std::string mes_376 = ":IRC 376 " + _nick + " :End of /MOTD command\r\n";
+
 //    std::string mess001 = ":001 * Welcome to IRC " + _nick + "!@127.0.0.1\r\n"; //NEED? Есть MTD
-
-
-//    std::cout << "fd sendMTD:" << _fd << "\n";
-
 //    write(_fd, mess001.c_str(), mess001.length()); //NEED?
+
     write(_fd, mes_375.c_str(), mes_375.length());
     write(_fd, mes_372.c_str(), mes_372.length());
     write(_fd, mes_376.c_str(), mes_376.length());

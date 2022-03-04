@@ -97,6 +97,8 @@ private:
     std::string getTmpBuf(int count, char *buf);
     std::string getMessage(std::vector<std::string> vect_arg);
 
+    void sendNoUser(int fd, std::string code, std::string text);
+
 };
 
 #endif //SERVER_HPP
