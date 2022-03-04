@@ -226,10 +226,10 @@ void Serv::process(int fd, char *buf)
 //        std::cout << "tmp_buf " << i << tmp_buf << '\n';
         usr_exmpl = getUser(fd);
 
-        if (!usr_exmpl)
-            std::cout << "user NONE\n";
-        else
-            std::cout << "user[" << usr_exmpl->getFdUser() << "], nick='" << usr_exmpl->getNickUser() << "', username '" << usr_exmpl->getUserUser() << "'\n";
+//        if (!usr_exmpl)
+//            std::cout << "user NONE\n";
+//        else
+//            std::cout << "user[" << usr_exmpl->getFdUser() << "], nick='" << usr_exmpl->getNickUser() << "', username '" << usr_exmpl->getUserUser() << "'\n";
         command_exmpl = new Request(tmp_buf); //todo: Поменять на tmp_buf, когда разберусь с несколькими \r\n в строке
         if (command_exmpl->get_comm() == "PASS")
             my_response = pass(fd, *command_exmpl, usr_exmpl);
@@ -268,7 +268,7 @@ response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 	response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
 
-    std::cout << "*PASS\n";
+//    std::cout << "*PASS\n";
 
     if ((tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':'))
         tmp_arg[0].erase(tmp_arg[0].begin());
@@ -292,7 +292,7 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     int check_res = 0;
 
-    std::cout << "*NICK\n";
+//    std::cout << "*NICK\n";
 
     if (tmp_arg.size() != 0)
         check_res = checkNick(tmp_arg[0]);
@@ -335,7 +335,7 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
 
-    std::cout << "*USER\n";
+//    std::cout << "*USER\n";
 
     int count_arg = tmp_arg.size();
     std::vector<std::string> tmp_usr;
@@ -392,7 +392,7 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
     std::string reciever;
     User *usr_reciever;
 
-    std::cout << "*PRIVMSG\n";
+//    std::cout << "*PRIVMSG\n";
 
     if (tmp_arg.size() < 2) {
         if (tmp_arg.size() == 0) {
@@ -404,13 +404,13 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
         }
         return (res);
     }
-    else
-        text_message = getMessage(tmp_arg);
+//    else
+//        text_message = getMessage(tmp_arg);
 
-    std::cout << "text PRVMSG:" << text_message << "\n";
+//    std::cout << "text PRVMSG:" << text_message << "\n";
 
     reciever = tmp_arg[0];
-    if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал
+    if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал('#' в nick не пройдет валидацию)
 
     }
     else{

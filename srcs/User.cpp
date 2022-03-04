@@ -65,17 +65,17 @@ void User::sendMTD() {
     std::string mes_375 = ":IRC 375 " + _nick + " :- IRC Message of the day -\r\n";
     std::string mes_372 = ":IRC 372 " + _nick + " :- IRC Welcome to server!!!\r\n";
     std::string mes_376 = ":IRC 376 " + _nick + " :End of /MOTD command\r\n";
-//    std::string mess001 = ":001 * Welcome to IRC " + _nick + "!@127.0.0.1\r\n"; //NEED?
+//    std::string mess001 = ":001 * Welcome to IRC " + _nick + "!@127.0.0.1\r\n"; //NEED? Есть MTD
 
 
 //    std::cout << "fd sendMTD:" << _fd << "\n";
 
-
+//    write(_fd, mess001.c_str(), mess001.length()); //NEED?
     write(_fd, mes_375.c_str(), mes_375.length());
     write(_fd, mes_372.c_str(), mes_372.length());
     write(_fd, mes_376.c_str(), mes_376.length());
 
-//    write(_fd, mess001.c_str(), mess001.length()); //NEED?
+
 }
 
 void User::sendSTDReplay(std::string code, std::string text) {
@@ -84,7 +84,6 @@ void User::sendSTDReplay(std::string code, std::string text) {
 
 
 //    response_serv = my_response.code_response + " : " + my_response.str_response + "\r\n";
-//    std::cout << response_serv << "\n";
     write(_fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
 }
 
@@ -101,19 +100,16 @@ int User::sendPrivMSG(Request comm_exmpl, std::string sender) {
 
 
     replay = ":" + sender + " " + comm_exmpl.get_comm();
-//    replay2 = ":IRC 303 " + _nick + " : " + sender + "\r\n";
+//    replay2 = ":IRC 303 " + _nick + " : " + sender + "\r\n"; уже отправляется в sendSTDReplay
 
     if (!_flag_away) {
         for (size_t i = 0; i < size_vect_arg; i++){
             replay += (" " + vect_arg[i]);
         }
         replay += "\r\n";
-        std::cout << "replay2:" << replay2;
-        std::cout << "replay:" << replay;
+//        std::cout << "replay2:" << replay2;
+//        std::cout << "replay:" << replay;
 
-        //replay2::IRC 303 oper : dduck
-        //replay:dduck PRIVMSG \r\n
-        //   oper :Drt'
 //        write(_fd, replay2.c_str(), replay2.length()); // :IRC 303 dduck : oper
         write(_fd, replay.c_str(), replay.length()); // :oper PRIVMSG dduck :opop
         return (1);
