@@ -23,7 +23,7 @@ private:
     Channel();
     Channel & operator= (const Channel &other);
     std::string _name;
-    std::vector<User*> *_ptr_vector_users; //Весь список юзеров на сервере
+    std::vector<User*> *_ptr_vector_users; //Весь список юзеров на сервере //Пока не пойму - зачем
     std::vector<User*> _channel_user; // юзеры в канале
 };
 

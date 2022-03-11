@@ -33,6 +33,8 @@ public:
     void sendMTD();
     void sendSTDReplay(std::string code, std::string text);
     int sendPrivMSG(Request comm_exmpl, std::string sender);
+    void sendJoinReplay(std::string channel_name);
+
 
 private:
     User();

@@ -486,18 +486,34 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
         res.code_response = "461";
         res.str_response = "ERR_NEEDMOREPARAMS";
     }
+    else if (tmp_arg.size() == 1 && tmp_arg[0][0] != '#'){ //Если нет '#' - реплаим что нет канала, новый не создаем
+        sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + tmp_arg[0], "ERR_NOSUCHCHANNEL"); //debug
+
+    }
     else if(tmp_arg.size() == 1) { //valid
         tmp_channel = getChannel(tmp_arg[0]);
         if (tmp_channel){ //уже есть такой канал //
             tmp_channel->addUserChannel(usr_exmpl);
-            sendNoUser(fd_client, "001", "Есть уже"); //debug
+            usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
+
+            //:kek!Adium@127.0.0.1 JOIN :#chkek - рассылка всем в канале, когда присоединился новый юзер //todo: сделать рассылку всем в Channel._channel_user
+            // kek - новый юзер, #chkek - канал
+
+//            :dduck!12@127.0.0.1 JOIN :#chan_kek - это есть в sendJoinReplay
+
+//              Это вроде нет необходимости делать
+//            :IRCat 331 dduck #chan_kek :No topic is set
+//            :IRCat 353 dduck = #chan_kek :@dduck
+//            :IRCat 366 dduck #chan_kek :End of /NAMES list
 
         }
         else{ //Нет такого канала, создаем новый //ERR_NOSUCHCHANNEL
-            sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser(), "ERR_NOSUCHCHANNEL"); //debug
-            channels.push_back(new Channel(tmp_arg[0], getVectUser()));
+            sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + tmp_arg[0], "ERR_NOSUCHCHANNEL"); //debug
+            channels.push_back(new Channel(tmp_arg[0], getVectUser())); //"#" + ??
             getChannel(tmp_arg[0])->addUserChannel(usr_exmpl);
+            usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
 
+            //:IRCat 403 oper chan_kek :No such channel
         }
     }
     else{ // Указано больше одного канала

@@ -75,10 +75,26 @@ void User::sendMTD() {
 
 }
 
+void User::sendJoinReplay(std::string channel_name) {
+
+    std::string mes_join = ":" + _nick + " JOIN :" + channel_name + "\r\n";
+
+    std::cout << mes_join;
+
+    write(_fd, mes_join.c_str(), mes_join.length());
+
+
+//            :dduck!12@127.0.0.1 JOIN :#chan_kek //:nick JOIN :#channel_name -
+
+//            :IRCat 331 dduck #chan_kek :No topic is set //RPL_NOTOPIC
+//            :IRCat 353 dduck = #chan_kek :@dduck //RPL_NAMREPLY "<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"
+//            :IRCat 366 dduck #chan_kek :End of /NAMES list //RPL_ENDOFNAMES
+
+}
+
 void User::sendSTDReplay(std::string code, std::string text) {
 
     std::string response_serv = ":IRC " + code + " " + getNickUser() + " : " + text + "\r\n";
-
 
 //    response_serv = my_response.code_response + " : " + my_response.str_response + "\r\n";
     write(_fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
