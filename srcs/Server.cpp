@@ -301,13 +301,11 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
         check_res = checkNick(tmp_arg[0]);
 //    check_res = checkNick();
 
+
     if (!usr_exmpl){
-        res.code_response = "451";
-        res.str_response = "ERR_NOTREGISTERED";
-    }
-    else if (tmp_arg.size() == 0){ // введен только NICK
-        res.code_response = "431";
-        res.str_response = "ERR_NONICKNAMEGIVEN";
+        sendNoUser(fd_client, "451", "ERR_NOTREGISTERED");
+//        res.code_response = "451";
+//        res.str_response = "ERR_NOTREGISTERED";
     }
     else if (!check_res){
         res.code_response = "432";
@@ -347,8 +345,9 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 //    std::string tmp_servname = "";
     std::string tmp_realname = "";
     if (!usr_exmpl){
-        res.code_response = "451";
-        res.str_response = "ERR_NOTREGISTERED";
+        sendNoUser(fd_client, "451", "ERR_NOTREGISTERED");
+//        res.code_response = "451";
+//        res.str_response = "ERR_NOTREGISTERED";
     }
     else if (((count_arg >= 4) && (tmp_arg[3][0] != ':')) || (count_arg < 4)){
         res.code_response = "461";
