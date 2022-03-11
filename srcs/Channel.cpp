@@ -2,7 +2,8 @@
 
 //Channel::Channel() {}
 
-Channel::Channel(std::string name) : _name(name) {}
+Channel::Channel(std::string name, std::vector<User*> *vect_user) : _name(name), _ptr_vector_users(vect_user) {
+}
 
 std::string Channel::getNameChannel(){
     return (_name);

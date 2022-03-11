@@ -11,7 +11,7 @@
 class Channel
 {
 public:
-    Channel(std::string name);
+    Channel(std::string name, std::vector<User*> *vect_user);
     Channel(const Channel &other);
     ~Channel();
 

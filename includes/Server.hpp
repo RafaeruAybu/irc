@@ -102,6 +102,7 @@ private:
     void sendNoUser(int fd, std::string code, std::string text);
         ////Channel
     Channel* getChannel(std::string channel_name);
+    std::vector<User*> *getVectUser(); //Такое...
 
 };
 

@@ -495,7 +495,7 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
         }
         else{ //Нет такого канала, создаем новый //ERR_NOSUCHCHANNEL
             sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser(), "ERR_NOSUCHCHANNEL"); //debug
-            channels.push_back(new Channel(tmp_arg[0]));
+            channels.push_back(new Channel(tmp_arg[0], getVectUser()));
             getChannel(tmp_arg[0])->addUserChannel(usr_exmpl);
 
         }
@@ -645,6 +645,10 @@ void Serv::sendNoUser(int fd, std::string code, std::string text) {
 
 
 ////Channel chart
+
+std::vector<User*> *Serv::getVectUser(){
+    return (&_users);
+}
 
 Channel* Serv::getChannel(std::string channel_name){
     std::vector<Channel*>::iterator it_begin = channels.begin();
