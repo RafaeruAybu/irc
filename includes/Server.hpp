@@ -61,6 +61,8 @@ private:
     response_server user(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server notice(int fd_client, Request comm_exmpl, User *usr_exmpl);
+    response_server join(int fd_client, Request comm_exmpl, User *usr_exmpl);
+
 
 
     void delete_user();
@@ -83,10 +85,10 @@ private:
     int num;                            //user num including listener
     struct pollfd fd_list[MAX_USERS];   //fd list to poll
     std::vector<User*> _users;          //userlist
-    std::vector<Channel> channels;      //channels
+    std::vector<Channel*> channels;      //channels
 
     std::string _oper_user;
-    std::string _oper_pass;
+    std::string _oper_pass ;
 
     ////command utils
     User *getUser(int fd);
@@ -98,6 +100,8 @@ private:
     std::string getMessage(std::vector<std::string> vect_arg);
 
     void sendNoUser(int fd, std::string code, std::string text);
+        ////Channel
+    Channel* getChannel(std::string channel_name);
 
 };
 

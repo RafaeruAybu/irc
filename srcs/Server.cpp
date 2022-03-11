@@ -244,7 +244,9 @@ void Serv::process(int fd, char *buf)
             else if(command_exmpl->get_comm() == "NOTICE"){
                 my_response = notice(fd, *command_exmpl, usr_exmpl);
             }
-            else if (command_exmpl->get_comm() == "JOIN") {} //Минимум
+            else if (command_exmpl->get_comm() == "JOIN") {
+                my_response = join(fd, *command_exmpl, usr_exmpl);
+            } //Минимум
             else if (command_exmpl->get_comm() == "OPER") {}
             else if (command_exmpl->get_comm() == "QUIT") {}
             else if (command_exmpl->get_comm() == "KICK") {}
@@ -308,12 +310,15 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 //        res.str_response = "ERR_NOTREGISTERED";
     }
     else if (!check_res){
-        res.code_response = "432";
-        res.str_response = "ERR_ERRONEUSNICKNAME";
+        sendNoUser(fd_client, "432", "ERR_ERRONEUSNICKNAME");
+//        res.code_response = "432";
+//        res.str_response = "ERR_ERRONEUSNICKNAME";
     }
     else if (check_res == 1){
-        res.code_response = "433";
-        res.str_response = "ERR_NICKNAMEINUSE";
+        sendNoUser(fd_client, "433", "ERR_NICKNAMEINUSE");
+//
+//        res.code_response = "433";
+//        res.str_response = "ERR_NICKNAMEINUSE";
     }
     else{
         usr_exmpl->setNick(tmp_arg[0]);
@@ -471,6 +476,51 @@ response_server Serv::notice(int fd_client, Request comm_exmpl, User *usr_exmpl)
 }
 
 
+response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
+    response_server res;
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+
+    Channel* tmp_channel;
+
+    if (tmp_arg.size() == 0){
+        res.code_response = "461";
+        res.str_response = "ERR_NEEDMOREPARAMS";
+    }
+    else if(tmp_arg.size() == 1) { //valid
+        tmp_channel = getChannel(tmp_arg[0]);
+        if (tmp_channel){ //уже есть такой канал //
+            tmp_channel->addUserChannel(usr_exmpl);
+            sendNoUser(fd_client, "001", "Есть уже"); //debug
+
+        }
+        else{ //Нет такого канала, создаем новый //ERR_NOSUCHCHANNEL
+            sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser(), "ERR_NOSUCHCHANNEL"); //debug
+            channels.push_back(new Channel(tmp_arg[0]));
+            getChannel(tmp_arg[0])->addUserChannel(usr_exmpl);
+
+        }
+    }
+    else{ // Указано больше одного канала
+        res.code_response = "405";
+        res.str_response = "ERR_TOOMANYCHANNELS";
+    }
+
+
+    /*
+     * ERR_NEEDMOREPARAMS
+     * ERR_BANNEDFROMCHAN
+     * ERR_INVITEONLYCHAN
+     * ERR_BADCHANNELKEY
+     * ERR_CHANNELISFULL
+     * ERR_BADCHANMASK
+     * ERR_NOSUCHCHANNEL
+     * ERR_TOOMANYCHANNELS
+     * RPL_TOPIC
+     */
+    return (res);
+}
+
+
 ////command utils
 User *Serv::getUser(int fd) {
     std::vector<User*>::iterator iter = _users.begin();
@@ -591,6 +641,20 @@ std::string Serv::getMessage(std::vector<std::string> vect_arg) {
 void Serv::sendNoUser(int fd, std::string code, std::string text) {
         std::string response_serv = ":IRC " + code + " " + " : " + text + "\r\n";
         write(fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
+}
+
+
+////Channel chart
+
+Channel* Serv::getChannel(std::string channel_name){
+    std::vector<Channel*>::iterator it_begin = channels.begin();
+    std::vector<Channel*>::iterator it_end = channels.end();
+
+    for (; it_begin != it_end; it_begin++){
+        if ((*it_begin)->getNameChannel() == channel_name)
+            return (*it_begin);
+    }
+    return (NULL);
 }
 
 
