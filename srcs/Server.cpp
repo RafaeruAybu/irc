@@ -251,6 +251,7 @@ void Serv::process(int fd, char *buf)
             else if (command_exmpl->get_comm() == "QUIT") {}
             else if (command_exmpl->get_comm() == "KICK") {}
             else if (command_exmpl->get_comm() == "MODE") {}
+            else if (command_exmpl->get_comm() == "LIST") {} //Список каналов
 
         }
         if (my_response.code_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
@@ -508,12 +509,16 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
 
         }
         else{ //Нет такого канала, создаем новый //ERR_NOSUCHCHANNEL
-            sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + tmp_arg[0], "ERR_NOSUCHCHANNEL"); //debug
+            sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + tmp_arg[0], "ERR_NOSUCHCHANNEL"); //:IRCat 403 oper chan_kek :No such channel
             channels.push_back(new Channel(tmp_arg[0], getVectUser())); //"#" + ??
-            getChannel(tmp_arg[0])->addUserChannel(usr_exmpl);
-            usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
+            tmp_channel = getChannel(tmp_arg[0]);
+            if (tmp_channel) {
+                tmp_channel->addUserChannel(usr_exmpl);
+                usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
+                tmp_channel->sendJoinAll(usr_exmpl->getNickUser()); //Написали всем в канале
+            }
 
-            //:IRCat 403 oper chan_kek :No such channel
+
         }
     }
     else{ // Указано больше одного канала

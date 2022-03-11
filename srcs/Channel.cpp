@@ -22,13 +22,30 @@ User* Channel::getUserChannel(std::string const &name_user){ //Поиск по �
     return (NULL);
 }
 
+void Channel::sendJoinAll(std::string new_user){
+
+    std::vector<User *>::iterator it_begin;
+    std::vector<User *>::iterator it_end;
+
+    if (_channel_user.size() > 0){
+        it_begin = _channel_user.begin();
+        it_end = _channel_user.end();
+        for (; it_begin != it_end; it_begin++) {
+            std::string mes_join_all = ":" + new_user + " JOIN :" + getNameChannel() + "\r\n";
+            write((*it_begin)->getFdUser(), mes_join_all.c_str(), mes_join_all.length());
+        }
+    }
+    //:kek!Adium@127.0.0.1 JOIN :#chkek - рассылка всем в канале, когда присоединился новый юзер //todo: сделать рассылку всем в Channel._channel_user
+    // kek - новый юзер, #chkek - канал
+}
+
 void Channel::addUserChannel(User *new_user){  //
     User* tmp = getUserChannel(new_user->getNickUser());
 
-    if (tmp){
+    if (!tmp){
 
-    }
-    else { // ника нет в канале
         _channel_user.push_back(new_user); //Добавили указатель в вектор указателей
+    }
+    else { // ник есть в канале, ничего не делаем
     }
 }

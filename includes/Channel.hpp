@@ -18,6 +18,7 @@ public:
     std::string getNameChannel();
     void addUserChannel(User *new_user);
     User* getUserChannel(std::string const &name_user);
+    void sendJoinAll(std::string new_user);
 
 private:
     Channel();
@@ -25,6 +26,9 @@ private:
     std::string _name;
     std::vector<User*> *_ptr_vector_users; //Весь список юзеров на сервере //Пока не пойму - зачем
     std::vector<User*> _channel_user; // юзеры в канале
+
+    ////utils
+
 };
 
 #endif
