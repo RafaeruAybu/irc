@@ -421,6 +421,10 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
 
     reciever = tmp_arg[0];
     if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал('#' в nick не пройдет валидацию)
+        sendPrivChannel(tmp_arg, reciever, usr_exmpl->getNickUser());
+        ////Разослать всем в канале
+        //:kek!Adium@127.0.0.1 PRIVMSG #chan :Hi, people!
+        //:nick_sender PRIVMSG #channel :message
 
     }
     else{
@@ -464,7 +468,7 @@ response_server Serv::notice(int fd_client, Request comm_exmpl, User *usr_exmpl)
 
     reciever = tmp_arg[0];
     if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал('#' в nick не пройдет валидацию)
-
+        sendPrivChannel(tmp_arg, reciever, usr_exmpl->getNickUser());
     }
     else{
         usr_reciever = getUser(reciever);
@@ -638,26 +642,26 @@ std::string Serv::getTmpBuf(int count, char *buf) {
     return ("o_O");
 }
 
-std::string Serv::getMessage(std::vector<std::string> vect_arg) {
-
-    int flag_mnogo = 0;
-    std::string res = "";
-
-    if (vect_arg.size() > 1)
-        flag_mnogo = 1;
-
-    if(vect_arg[1].size() > 0 && vect_arg[1][0] != ':')
-        return vect_arg[1];
-    else{
-        for (size_t i = 1; i < vect_arg.size(); i++){
-            res += vect_arg[i] + " ";
-        }
-        if (flag_mnogo)
-            res.erase(res.end() - 1);
-        res.erase(res.begin());
-        return (res);
-    }
-}
+//std::string Serv::getMessage(std::vector<std::string> vect_arg) {
+//
+//    int flag_mnogo = 0;
+//    std::string res = "";
+//
+//    if (vect_arg.size() > 1)
+//        flag_mnogo = 1;
+//
+//    if(vect_arg[1].size() > 0 && vect_arg[1][0] != ':')
+//        return vect_arg[1];
+//    else{
+//        for (size_t i = 1; i < vect_arg.size(); i++){
+//            res += vect_arg[i] + " ";
+//        }
+//        if (flag_mnogo)
+//            res.erase(res.end() - 1);
+//        res.erase(res.begin());
+//        return (res);
+//    }
+//}
 
 void Serv::sendNoUser(int fd, std::string code, std::string text) {
         std::string response_serv = ":IRC " + code + " " + " : " + text + "\r\n";
@@ -680,6 +684,17 @@ Channel* Serv::getChannel(std::string channel_name){
             return (*it_begin);
     }
     return (NULL);
+}
+
+void Serv::sendPrivChannel(std::vector<std::string> tmp_arg, std::string name_channel, std::string sender){
+    Channel *tmp;
+
+    if (tmp_arg.size() > 1) { //tmp_arg[0] - name channel
+        tmp = getChannel(name_channel);
+        if (tmp) {
+            tmp->sendPriv(tmp_arg, sender);
+        }
+    }
 }
 
 

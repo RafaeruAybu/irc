@@ -97,12 +97,13 @@ private:
     int checkNick(std::string nick);
     int getCountCommand(char *buf);
     std::string getTmpBuf(int count, char *buf);
-    std::string getMessage(std::vector<std::string> vect_arg);
+//    std::string getMessage(std::vector<std::string> vect_arg);
 
     void sendNoUser(int fd, std::string code, std::string text);
         ////Channel
     Channel* getChannel(std::string channel_name);
     std::vector<User*> *getVectUser(); //Такое...
+    void sendPrivChannel(std::vector<std::string> tmp_arg, std::string name_channel, std::string sender);
 
 };
 
