@@ -252,6 +252,10 @@ void Serv::process(int fd, char *buf)
             else if (command_exmpl->get_comm() == "KICK") {}
             else if (command_exmpl->get_comm() == "MODE") {}
             else if (command_exmpl->get_comm() == "LIST") {} //Список каналов
+			else if (command_exmpl->get_comm() == "WHO") {
+				my_response = who(fd, *command_exmpl, usr_exmpl);
+			} //Список юзеров
+        
 
         }
         if (my_response.code_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
@@ -276,7 +280,7 @@ response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 
 //    std::cout << "*PASS\n";
 
-    if ((tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':')) //Удаление ':' для Adium
+    if (((tmp_arg.size() != 0) && tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':')) //Удаление ':' для Adium
         tmp_arg[0].erase(tmp_arg[0].begin());
 
 
@@ -401,6 +405,7 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
 //    std::string text_message;
     std::string reciever;
     User *usr_reciever;
+    Channel* tmp_channel;
 
 //    std::cout << "*PRIVMSG\n";
 
@@ -421,11 +426,10 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
 
     reciever = tmp_arg[0];
     if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал('#' в nick не пройдет валидацию)
-        sendPrivChannel(tmp_arg, reciever, usr_exmpl->getNickUser());
-        ////Разослать всем в канале
-        //:kek!Adium@127.0.0.1 PRIVMSG #chan :Hi, people!
-        //:nick_sender PRIVMSG #channel :message
-
+		tmp_channel = getChannel(reciever);
+		if (tmp_channel){
+			tmp_channel->sendPrivChannel(tmp_arg, usr_exmpl->getNickUser());
+		}
     }
     else{
         usr_reciever = getUser(reciever);
@@ -454,6 +458,7 @@ response_server Serv::notice(int fd_client, Request comm_exmpl, User *usr_exmpl)
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     std::string reciever;
     User *usr_reciever;
+    Channel* tmp_channel;
 
 //    std::cout << "*NOTICE\n";
 
@@ -468,7 +473,10 @@ response_server Serv::notice(int fd_client, Request comm_exmpl, User *usr_exmpl)
 
     reciever = tmp_arg[0];
     if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал('#' в nick не пройдет валидацию)
-        sendPrivChannel(tmp_arg, reciever, usr_exmpl->getNickUser());
+		tmp_channel = getChannel(reciever);
+		if (tmp_channel){
+			tmp_channel->sendPrivChannel(tmp_arg, usr_exmpl->getNickUser());
+		}
     }
     else{
         usr_reciever = getUser(reciever);
@@ -486,6 +494,7 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
 
     Channel* tmp_channel;
+    User* tmp_user;
 
     if (tmp_arg.size() == 0){
         res.code_response = "461";
@@ -498,10 +507,16 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
     else if(tmp_arg.size() == 1) { //valid
         tmp_channel = getChannel(tmp_arg[0]);
         if (tmp_channel){ //уже есть такой канал //
-            tmp_channel->addUserChannel(usr_exmpl);
-            usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
-
-            //:kek!Adium@127.0.0.1 JOIN :#chkek - рассылка всем в канале, когда присоединился новый юзер //todo: сделать рассылку всем в Channel._channel_user
+        	tmp_user = tmp_channel->getUserChannel(usr_exmpl->getNickUser());
+        	if (!tmp_user) // Юзера еще нет в канале
+			{
+				tmp_channel->addUserChannel(usr_exmpl);
+//            usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
+				tmp_channel->sendJoinAll(usr_exmpl->getNickUser()); //Написали всем в канале
+			}
+	
+	
+			//:kek!Adium@127.0.0.1 JOIN :#chkek - рассылка всем в канале, когда присоединился новый юзер //todo: сделать рассылку всем в Channel._channel_user
             // kek - новый юзер, #chkek - канал
 
 //            :dduck!12@127.0.0.1 JOIN :#chan_kek - это есть в sendJoinReplay
@@ -518,7 +533,7 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
             tmp_channel = getChannel(tmp_arg[0]);
             if (tmp_channel) {
                 tmp_channel->addUserChannel(usr_exmpl);
-                usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
+//                usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
                 tmp_channel->sendJoinAll(usr_exmpl->getNickUser()); //Написали всем в канале
             }
 
@@ -544,6 +559,30 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
      */
     return (res);
 }
+
+
+response_server Serv::who(int fd_client, Request comm_exmpl, User *usr_exmpl){
+	response_server res;
+	std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+	User* tmp_user;
+	Channel* tmp_channel;
+	
+	
+	if (tmp_arg.size() > 1 && tmp_arg[0].size() > 0){
+		if (tmp_arg[0][0] == '#'){ //запрос юзеров в канале
+			tmp_channel = getChannel(tmp_arg[0]);
+			if(tmp_channel){
+				res.str_response = tmp_channel->getWhoChannel();
+				res.code_response = "315";
+			}
+		}
+	}
+	return (res);
+	
+	//Request WHO #channel
+	//:IRCat 315 oper oper :End of /WHO list
+}
+
 
 
 ////command utils
@@ -647,6 +686,7 @@ std::string Serv::getTmpBuf(int count, char *buf) {
 //    int flag_mnogo = 0;
 //    std::string res = "";
 //
+//    std::cout << "get Message vect_arg[0]=" << vect_arg[0] << "\n";
 //    if (vect_arg.size() > 1)
 //        flag_mnogo = 1;
 //
@@ -684,17 +724,6 @@ Channel* Serv::getChannel(std::string channel_name){
             return (*it_begin);
     }
     return (NULL);
-}
-
-void Serv::sendPrivChannel(std::vector<std::string> tmp_arg, std::string name_channel, std::string sender){
-    Channel *tmp;
-
-    if (tmp_arg.size() > 1) { //tmp_arg[0] - name channel
-        tmp = getChannel(name_channel);
-        if (tmp) {
-            tmp->sendPriv(tmp_arg, sender);
-        }
-    }
 }
 
 

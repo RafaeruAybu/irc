@@ -100,12 +100,10 @@ void User::sendSTDReplay(std::string code, std::string text) {
     write(_fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
 }
 
-int User::sendPrivMSG(Request comm_exmpl, std::string sender) {
+int User::sendPrivMSG(Request comm_exmpl, std::string sender) { //нет проверки на ':'
     std::string replay;
     std::string replay2;
-
-
-
+    
     size_t size_vect_arg = comm_exmpl.get_vect_arg().size();
     std::vector<std::string> vect_arg;
 

@@ -19,7 +19,8 @@ public:
     void addUserChannel(User *new_user);
     User* getUserChannel(std::string const &name_user);
     void sendJoinAll(std::string new_user);
-    void sendPriv(std::vector<std::string> tmp_arg, std::string sender);
+    std::string getWhoChannel();
+    void sendPrivChannel(std::vector<std::string> vect_arg, std::string sender);
 
 private:
     Channel();
@@ -29,7 +30,8 @@ private:
     std::vector<User*> _channel_user; // юзеры в канале
 
     ////utils
-    std::string getMessage(std::vector<std::string> vect_arg);
+	std::string getMessage(std::vector<std::string> vect_arg);
+
 };
 
 #endif
