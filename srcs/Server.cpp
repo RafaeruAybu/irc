@@ -276,7 +276,7 @@ response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 
 //    std::cout << "*PASS\n";
 
-    if ((tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':')) //Удаление ':' для Adium
+    if (((tmp_arg.size() != 0) && tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':')) //Удаление ':' для Adium
         tmp_arg[0].erase(tmp_arg[0].begin());
 
 
@@ -482,6 +482,7 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
 
     Channel* tmp_channel;
+    User* tmp_user;
 
     if (tmp_arg.size() == 0){
         res.code_response = "461";
@@ -494,10 +495,16 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
     else if(tmp_arg.size() == 1) { //valid
         tmp_channel = getChannel(tmp_arg[0]);
         if (tmp_channel){ //уже есть такой канал //
-            tmp_channel->addUserChannel(usr_exmpl);
-            usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
-
-            //:kek!Adium@127.0.0.1 JOIN :#chkek - рассылка всем в канале, когда присоединился новый юзер //todo: сделать рассылку всем в Channel._channel_user
+        	tmp_user = tmp_channel->getUserChannel(usr_exmpl->getNickUser());
+        	if (!tmp_user) // Юзера еще нет в канале
+			{
+				tmp_channel->addUserChannel(usr_exmpl);
+//            usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
+				tmp_channel->sendJoinAll(usr_exmpl->getNickUser()); //Написали всем в канале
+			}
+	
+	
+			//:kek!Adium@127.0.0.1 JOIN :#chkek - рассылка всем в канале, когда присоединился новый юзер //todo: сделать рассылку всем в Channel._channel_user
             // kek - новый юзер, #chkek - канал
 
 //            :dduck!12@127.0.0.1 JOIN :#chan_kek - это есть в sendJoinReplay
@@ -514,7 +521,7 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
             tmp_channel = getChannel(tmp_arg[0]);
             if (tmp_channel) {
                 tmp_channel->addUserChannel(usr_exmpl);
-                usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
+//                usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
                 tmp_channel->sendJoinAll(usr_exmpl->getNickUser()); //Написали всем в канале
             }
 

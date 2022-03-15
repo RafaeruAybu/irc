@@ -32,6 +32,7 @@ void Channel::sendJoinAll(std::string new_user){
         it_end = _channel_user.end();
         for (; it_begin != it_end; it_begin++) {
             std::string mes_join_all = ":" + new_user + " JOIN :" + getNameChannel() + "\r\n";
+//			std::cout << "Rassilka: '" << mes_join_all;
             write((*it_begin)->getFdUser(), mes_join_all.c_str(), mes_join_all.length());
         }
     }
