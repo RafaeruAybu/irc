@@ -405,6 +405,7 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
 //    std::string text_message;
     std::string reciever;
     User *usr_reciever;
+    Channel* tmp_channel;
 
 //    std::cout << "*PRIVMSG\n";
 
@@ -425,7 +426,10 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
 
     reciever = tmp_arg[0];
     if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал('#' в nick не пройдет валидацию)
-
+		tmp_channel = getChannel(reciever);
+		if (tmp_channel){
+			tmp_channel->sendPrivChannel(tmp_arg, usr_exmpl->getNickUser());
+		}
     }
     else{
         usr_reciever = getUser(reciever);
@@ -673,26 +677,27 @@ std::string Serv::getTmpBuf(int count, char *buf) {
     return ("o_O");
 }
 
-std::string Serv::getMessage(std::vector<std::string> vect_arg) {
-
-    int flag_mnogo = 0;
-    std::string res = "";
-
-    if (vect_arg.size() > 1)
-        flag_mnogo = 1;
-
-    if(vect_arg[1].size() > 0 && vect_arg[1][0] != ':')
-        return vect_arg[1];
-    else{
-        for (size_t i = 1; i < vect_arg.size(); i++){
-            res += vect_arg[i] + " ";
-        }
-        if (flag_mnogo)
-            res.erase(res.end() - 1);
-        res.erase(res.begin());
-        return (res);
-    }
-}
+//std::string Serv::getMessage(std::vector<std::string> vect_arg) {
+//
+//    int flag_mnogo = 0;
+//    std::string res = "";
+//
+//    std::cout << "get Message vect_arg[0]=" << vect_arg[0] << "\n";
+//    if (vect_arg.size() > 1)
+//        flag_mnogo = 1;
+//
+//    if(vect_arg[1].size() > 0 && vect_arg[1][0] != ':')
+//        return vect_arg[1];
+//    else{
+//        for (size_t i = 1; i < vect_arg.size(); i++){
+//            res += vect_arg[i] + " ";
+//        }
+//        if (flag_mnogo)
+//            res.erase(res.end() - 1);
+//        res.erase(res.begin());
+//        return (res);
+//    }
+//}
 
 void Serv::sendNoUser(int fd, std::string code, std::string text) {
         std::string response_serv = ":IRC " + code + " " + " : " + text + "\r\n";
