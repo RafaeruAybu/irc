@@ -252,6 +252,10 @@ void Serv::process(int fd, char *buf)
             else if (command_exmpl->get_comm() == "KICK") {}
             else if (command_exmpl->get_comm() == "MODE") {}
             else if (command_exmpl->get_comm() == "LIST") {} //Список каналов
+			else if (command_exmpl->get_comm() == "WHO") {
+				my_response = who(fd, *command_exmpl, usr_exmpl);
+			} //Список юзеров
+        
 
         }
         if (my_response.code_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
@@ -547,6 +551,30 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
      */
     return (res);
 }
+
+
+response_server Serv::who(int fd_client, Request comm_exmpl, User *usr_exmpl){
+	response_server res;
+	std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+	User* tmp_user;
+	Channel* tmp_channel;
+	
+	
+	if (tmp_arg.size() > 1 && tmp_arg[0].size() > 0){
+		if (tmp_arg[0][0] == '#'){ //запрос юзеров в канале
+			tmp_channel = getChannel(tmp_arg[0]);
+			if(tmp_channel){
+				res.str_response = tmp_channel->getWhoChannel();
+				res.code_response = "315";
+			}
+		}
+	}
+	return (res);
+	
+	//Request WHO #channel
+	//:IRCat 315 oper oper :End of /WHO list
+}
+
 
 
 ////command utils

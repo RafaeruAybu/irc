@@ -19,6 +19,7 @@ public:
     void addUserChannel(User *new_user);
     User* getUserChannel(std::string const &name_user);
     void sendJoinAll(std::string new_user);
+    std::string getWhoChannel();
 
 private:
     Channel();

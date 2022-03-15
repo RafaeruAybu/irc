@@ -32,7 +32,6 @@ void Channel::sendJoinAll(std::string new_user){
         it_end = _channel_user.end();
         for (; it_begin != it_end; it_begin++) {
             std::string mes_join_all = ":" + new_user + " JOIN :" + getNameChannel() + "\r\n";
-//			std::cout << "Rassilka: '" << mes_join_all;
             write((*it_begin)->getFdUser(), mes_join_all.c_str(), mes_join_all.length());
         }
     }
@@ -49,4 +48,26 @@ void Channel::addUserChannel(User *new_user){  //
     }
     else { // ник есть в канале, ничего не делаем
     }
+}
+
+std::string Channel::getWhoChannel()
+{
+	std::string res = "";
+	
+	std::vector<User *>::iterator it_begin;
+	std::vector<User *>::iterator it_end;
+	
+	if (_channel_user.size() > 0)
+	{
+		it_begin = _channel_user.begin();
+		it_end = _channel_user.end();
+		for (; it_begin != it_end; it_begin++)
+		{
+			
+			res += (*it_begin)->getNickUser() + " ";
+			
+		}
+		
+	}
+	return (res);
 }

@@ -62,6 +62,7 @@ private:
     response_server privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server notice(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server join(int fd_client, Request comm_exmpl, User *usr_exmpl);
+	response_server who(int fd_client, Request comm_exmpl, User *usr_exmpl);
 
 
 
