@@ -64,15 +64,9 @@ std::string Channel::getWhoChannel()
 		it_begin = _channel_user.begin();
 		it_end = _channel_user.end();
 		for (; it_begin != it_end; it_begin++)
-		{
-			std::cout << "getNickUser= " << (*it_begin)->getNickUser() << "/END\n";
 			res += (*it_begin)->getNickUser() + " ";
-
-		}
         res.erase(res.end() - 1);
-		
 	}
-    std::cout << "res=" << res << "/END\n";
 	return (res);
 }
 
@@ -154,7 +148,7 @@ void Channel::sendReplaySenderJoin(std::string nick_sender){
     //IRCat 353 oper2 = #cahn :dduck oper1 kek:IRCat 366 oper2 #cahn :End of /NAMES lis:oper2 JOIN :#cahn
 
     //              Это вроде нет необходимости делать
-//            :IRCat 331 dduck #chan_kek :No topic is set
-//            :IRCat 353 dduck = #chan_kek :@dduck
-//            :IRCat 366 dduck #chan_kek :End of /NAMES list
+//            :IRC 331 dduck #chan_kek :No topic is set
+//            :IRC 353 dduck = #chan_kek :@dduck
+//            :IRC 366 dduck #chan_kek :End of /NAMES list
 }

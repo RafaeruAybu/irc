@@ -257,9 +257,9 @@ void Serv::process(int fd, char *buf)
             else if (command_exmpl->get_comm() == "QUIT") {}
             else if (command_exmpl->get_comm() == "KICK") {}
             else if (command_exmpl->get_comm() == "MODE") {}
-//            else if (command_exmpl->get_comm() == "PING") {
-//                my_response = pingClient(fd, *command_exmpl, usr_exmpl);
-//            }
+            else if (command_exmpl->get_comm() == "PING") {
+                my_response = pingClient(fd, *command_exmpl, usr_exmpl);
+            }
             else if (command_exmpl->get_comm() == "LIST") {} //Список каналов
 			else if (command_exmpl->get_comm() == "WHO") {
 				my_response = who(fd, *command_exmpl, usr_exmpl);
@@ -359,14 +359,9 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 
     int count_arg = tmp_arg.size();
     std::vector<std::string> tmp_usr;
-//    std::string tmp_usrname = "";
-//    std::string tmp_hostname= "";
-//    std::string tmp_servname = "";
     std::string tmp_realname = "";
     if (!usr_exmpl){
         sendNoUser(fd_client, "451", "ERR_NOTREGISTERED");
-//        res.code_response = "451";
-//        res.str_response = "ERR_NOTREGISTERED";
     }
     else if (((count_arg >= 4) && (tmp_arg[3][0] != ':')) || (count_arg < 4)){
         res.code_response = "461";
@@ -382,9 +377,6 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
         tmp_usr.push_back(tmp_arg[1]);
         tmp_usr.push_back(tmp_arg[2]);
 
-//        tmp_usrname = tmp_arg[0];
-//        tmp_hostname = tmp_arg[1];
-//        tmp_servname = tmp_arg[2];
         for (int i = 3; i < count_arg; i++){
             tmp_realname = tmp_realname + tmp_arg[i];
             tmp_realname += " ";
@@ -428,11 +420,6 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
         }
         return (res);
     }
-//    else
-//        text_message = getMessage(tmp_arg);
-
-//    std::cout << "text PRVMSG:" << text_message << "\n";
-
     reciever = tmp_arg[0];
     if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал('#' в nick не пройдет валидацию)
 		tmp_channel = getChannel(reciever);
@@ -550,19 +537,6 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
         res.code_response = "405";
         res.str_response = "ERR_TOOMANYCHANNELS";
     }
-
-
-    /*
-     * ERR_NEEDMOREPARAMS
-     * ERR_BANNEDFROMCHAN
-     * ERR_INVITEONLYCHAN
-     * ERR_BADCHANNELKEY
-     * ERR_CHANNELISFULL
-     * ERR_BADCHANMASK
-     * ERR_NOSUCHCHANNEL
-     * ERR_TOOMANYCHANNELS
-     * RPL_TOPIC
-     */
     return (res);
 }
 
@@ -589,10 +563,21 @@ response_server Serv::who(int fd_client, Request comm_exmpl, User *usr_exmpl){
 
 }
 
-//response_server Serv::pingClient(int fd_client, Request comm_exmpl, User *usr_exmpl){
-//    response_server res;
-//    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
-//}
+response_server Serv::pingClient(int fd_client, Request comm_exmpl, User *usr_exmpl){
+    response_server res;
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+
+    std::string str_replay;
+
+    std::cout << "Client_nick[" << usr_exmpl->getNickUser() << "]" << "PING\n";
+
+    str_replay = "PONG " + tmp_arg[0] + "\r\n";
+
+    write(fd_client, str_replay.c_str(), str_replay.length());
+
+    res.code_response = "";
+    return(res);
+}
 
 
 ////command utils
@@ -657,10 +642,6 @@ int Serv::getCountCommand(char *buf) {
 }
 
 std::string Serv::getTmpBuf(int count, char *buf) {
-    std::istringstream iss(buf);
-    std::vector<std::string> results((std::istream_iterator<std::string>(iss)),
-                                     std::istream_iterator<std::string>());
-
     std::string res(buf);
     std::string tmp_res = "";
     size_t pos;
@@ -690,28 +671,6 @@ std::string Serv::getTmpBuf(int count, char *buf) {
     }
     return ("o_O");
 }
-
-//std::string Serv::getMessage(std::vector<std::string> vect_arg) {
-//
-//    int flag_mnogo = 0;
-//    std::string res = "";
-//
-//    std::cout << "get Message vect_arg[0]=" << vect_arg[0] << "\n";
-//    if (vect_arg.size() > 1)
-//        flag_mnogo = 1;
-//
-//    if(vect_arg[1].size() > 0 && vect_arg[1][0] != ':')
-//        return vect_arg[1];
-//    else{
-//        for (size_t i = 1; i < vect_arg.size(); i++){
-//            res += vect_arg[i] + " ";
-//        }
-//        if (flag_mnogo)
-//            res.erase(res.end() - 1);
-//        res.erase(res.begin());
-//        return (res);
-//    }
-//}
 
 void Serv::sendNoUser(int fd, std::string code, std::string text) {
         std::string response_serv = ":IRC " + code + " " + " : " + text + "\r\n";
