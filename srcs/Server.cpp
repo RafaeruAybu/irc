@@ -257,6 +257,9 @@ void Serv::process(int fd, char *buf)
             else if (command_exmpl->get_comm() == "QUIT") {}
             else if (command_exmpl->get_comm() == "KICK") {}
             else if (command_exmpl->get_comm() == "MODE") {}
+//            else if (command_exmpl->get_comm() == "PING") {
+//                my_response = pingClient(fd, *command_exmpl, usr_exmpl);
+//            }
             else if (command_exmpl->get_comm() == "LIST") {} //Список каналов
 			else if (command_exmpl->get_comm() == "WHO") {
 				my_response = who(fd, *command_exmpl, usr_exmpl);
@@ -583,8 +586,13 @@ response_server Serv::who(int fd_client, Request comm_exmpl, User *usr_exmpl){
 	
 	//Request WHO #channel
 	//:IRCat 315 oper oper :End of /WHO list
+
 }
 
+//response_server Serv::pingClient(int fd_client, Request comm_exmpl, User *usr_exmpl){
+//    response_server res;
+//    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+//}
 
 
 ////command utils

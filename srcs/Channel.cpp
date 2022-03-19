@@ -26,13 +26,15 @@ void Channel::sendJoinAll(std::string new_user){
 
     std::vector<User *>::iterator it_begin;
     std::vector<User *>::iterator it_end;
+    int fd;
 
     if (_channel_user.size() > 0){
         it_begin = _channel_user.begin();
         it_end = _channel_user.end();
         for (; it_begin != it_end; it_begin++) {
-            std::string mes_join_all = ":" + new_user + " JOIN :" + getNameChannel() + "\r\n";
-            write((*it_begin)->getFdUser(), mes_join_all.c_str(), mes_join_all.length());
+            std::string mes_join_all = ":" + new_user + "!Adium@127.0.0.1 JOIN :" + getNameChannel() + "\r\n";
+            fd = (*it_begin)->getFdUser();
+            write(fd, mes_join_all.c_str(), mes_join_all.length());
         }
     }
     //:kek!Adium@127.0.0.1 JOIN :#chkek - рассылка всем в канале, когда присоединился новый юзер //todo: сделать рассылку всем в Channel._channel_user
@@ -63,12 +65,14 @@ std::string Channel::getWhoChannel()
 		it_end = _channel_user.end();
 		for (; it_begin != it_end; it_begin++)
 		{
-			
+			std::cout << "getNickUser= " << (*it_begin)->getNickUser() << "/END\n";
 			res += (*it_begin)->getNickUser() + " ";
-			
+
 		}
+        res.erase(res.end() - 1);
 		
 	}
+    std::cout << "res=" << res << "/END\n";
 	return (res);
 }
 
@@ -135,10 +139,10 @@ void Channel::sendReplaySenderJoin(std::string nick_sender){
     tmp_user = getUserChannel(nick_sender);
 
     if (tmp_user){
-        str_replay_1 = ":IRCat 331 " + nick_sender + " " + getNameChannel() + " :No topic is set\r\n";
-        str_replay_2 = ":IRCat 353 " + nick_sender + " = " + getNameChannel() + " :" + getWhoChannel() + "\r\n";
+        str_replay_1 = "::IRC 331 " + nick_sender + " " + getNameChannel() + " :No topic is set\r\n";
+        str_replay_2 = "::IRC 353 " + nick_sender + " = " + getNameChannel() + " :@" + getWhoChannel() + "\r\n";
 //        std::cout << "str_replay_2 = " << str_replay_2 ;
-        str_replay_3 = ":IRCat 366 " + nick_sender + " " + getNameChannel() + " :End of /NAMES list\r\n";
+        str_replay_3 = "::IRC 366 " + nick_sender + " " + getNameChannel() + " :End of /NAMES list\r\n";
 
         fd = tmp_user->getFdUser();
         write(fd, str_replay_1.c_str(), str_replay_1.length());
