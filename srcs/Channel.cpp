@@ -122,3 +122,35 @@ void Channel::sendPrivChannel(std::vector<std::string> vect_arg, std::string sen
 	//:dduck!Adium@127.0.0.1 PRIVMSG #chan :Hu is hu
 	//:nick_sender PRIVMSG #channel :message
 }
+
+
+void Channel::sendReplaySenderJoin(std::string nick_sender){
+    User *tmp_user;
+    std::string str_replay_1;
+    std::string str_replay_2;
+    std::string str_replay_3;
+    int fd;
+
+
+    tmp_user = getUserChannel(nick_sender);
+
+    if (tmp_user){
+        str_replay_1 = ":IRCat 331 " + nick_sender + " " + getNameChannel() + " :No topic is set\r\n";
+        str_replay_2 = ":IRCat 353 " + nick_sender + " = " + getNameChannel() + " :" + getWhoChannel() + "\r\n";
+//        std::cout << "str_replay_2 = " << str_replay_2 ;
+        str_replay_3 = ":IRCat 366 " + nick_sender + " " + getNameChannel() + " :End of /NAMES list\r\n";
+
+        fd = tmp_user->getFdUser();
+        write(fd, str_replay_1.c_str(), str_replay_1.length());
+        write(fd, str_replay_2.c_str(), str_replay_2.length());
+        write(fd, str_replay_3.c_str(), str_replay_3.length());
+
+
+    }
+    //IRCat 353 oper2 = #cahn :dduck oper1 kek:IRCat 366 oper2 #cahn :End of /NAMES lis:oper2 JOIN :#cahn
+
+    //              Это вроде нет необходимости делать
+//            :IRCat 331 dduck #chan_kek :No topic is set
+//            :IRCat 353 dduck = #chan_kek :@dduck
+//            :IRCat 366 dduck #chan_kek :End of /NAMES list
+}

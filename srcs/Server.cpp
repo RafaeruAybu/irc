@@ -517,6 +517,7 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
         	if (!tmp_user) // Юзера еще нет в канале
 			{
 				tmp_channel->addUserChannel(usr_exmpl);
+                tmp_channel->sendReplaySenderJoin(usr_exmpl->getNickUser());
 //            usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
 				tmp_channel->sendJoinAll(usr_exmpl->getNickUser()); //Написали всем в канале
 			}
@@ -527,11 +528,6 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
 
 //            :dduck!12@127.0.0.1 JOIN :#chan_kek - это есть в sendJoinReplay
 
-//              Это вроде нет необходимости делать
-//            :IRCat 331 dduck #chan_kek :No topic is set
-//            :IRCat 353 dduck = #chan_kek :@dduck
-//            :IRCat 366 dduck #chan_kek :End of /NAMES list
-
         }
         else{ //Нет такого канала, создаем новый //ERR_NOSUCHCHANNEL
             sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + tmp_arg[0], "ERR_NOSUCHCHANNEL"); //:IRCat 403 oper chan_kek :No such channel
@@ -540,6 +536,7 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
             if (tmp_channel) {
                 tmp_channel->addUserChannel(usr_exmpl);
 //                usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
+                tmp_channel->sendReplaySenderJoin(usr_exmpl->getNickUser());
                 tmp_channel->sendJoinAll(usr_exmpl->getNickUser()); //Написали всем в канале
             }
 
