@@ -132,6 +132,8 @@ int Serv::get_new_connection()
 
 void Serv::do_poll_default()
 {
+    User* tmp_user_for_del;
+
     //if it is a listener fd, call an accept to accept new connection
     //if it is a client fd, read the data
     int i = 0;
@@ -164,8 +166,12 @@ void Serv::do_poll_default()
                 std::cout << "client quit..." << std::endl;
 //                std::cout << "fd quit:" <<  fd_list[i].fd << "\n";
 //                delete getUser(fd_list[i].fd);
-                if (getUserIter(fd_list[i].fd) != _users.end())
+                tmp_user_for_del = *(getUserIter(fd_list[i].fd));
+                if (getUserIter(fd_list[i].fd) != _users.end()) {
+
                     _users.erase((getUserIter(fd_list[i].fd)));
+                    delete tmp_user_for_del;
+                }
                 close(fd_list[i].fd);
                 fd_list[i].fd = -1;
                 break;   //todo test
@@ -566,9 +572,8 @@ response_server Serv::who(int fd_client, Request comm_exmpl, User *usr_exmpl){
 	std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
 	User* tmp_user;
 	Channel* tmp_channel;
-	
-	
-	if (tmp_arg.size() > 1 && tmp_arg[0].size() > 0){
+
+	if (tmp_arg.size() >= 1 && tmp_arg[0].size() > 0){
 		if (tmp_arg[0][0] == '#'){ //запрос юзеров в канале
 			tmp_channel = getChannel(tmp_arg[0]);
 			if(tmp_channel){
