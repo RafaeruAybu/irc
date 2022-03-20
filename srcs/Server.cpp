@@ -775,12 +775,10 @@ void Serv::sendQuitUser(std::string name_user, Request comm_exmpl) {
         it_begin = _users.begin();
         it_end = _users.end();
 
-        if (tmp_arg.size() > 1)
-            message = Channel::getMessage(tmp_arg);
-        else if (tmp_arg.size() == 1)
-            message = tmp_arg[0];
+        if (tmp_arg.size() > 0)
+            message = getMessageServ(tmp_arg);
         else
-            message = "QUIT";
+            message = "No reason quit";
 
         replay = ":" + name_user + "!Adium@127.0.0.1 QUIT :" + message + "\r\n";
 
@@ -791,9 +789,35 @@ void Serv::sendQuitUser(std::string name_user, Request comm_exmpl) {
 
         //:dduck!Adium@127.0.0.1 QUIT :Leaving.
     }
+}
 
+std::string Serv::getMessageServ(std::vector<std::string> vect_arg){
+    int flag_mnogo = 0;
+    std::string res = "";
 
+    if (vect_arg.size() == 0)
+        return (res);
 
+    // :1 2 4 -> 1 2 3
+    // 1 2 4 -> 1
+    // :1 -> 1
+
+    if (vect_arg.size() == 1){ // "1" или ":1"
+        res = vect_arg[0];
+        if (res[0] == ':')
+            res.erase(res[0]);
+    }
+    else if(vect_arg.size() > 1){ //"1 2 3" или ":1 2 3"
+        if (vect_arg[0][0] != ':')
+            res = vect_arg[0];
+        else {
+            for (size_t i = 0; i < vect_arg.size(); i++) {
+                res += vect_arg[i] + " ";
+            }
+            res.erase(res.end() - 1);
+        }
+    }
+    return (res);
 }
 
 

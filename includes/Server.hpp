@@ -114,6 +114,8 @@ private:
     void clearChannel(std::string name_user);
     void sendQuitUser(std::string name_user, Request comm_exmpl);
 
+    std::string getMessageServ(std::vector<std::string> tmp_arg);
+
 };
 
 #endif //SERVER_HPP
