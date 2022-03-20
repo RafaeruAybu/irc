@@ -24,6 +24,8 @@ public:
     std::string getWhoChannel();
 
     void eraseUserFromChannel(std::string name_user);
+    static std::string getMessage(std::vector<std::string> vect_arg);
+
 
 
 
@@ -35,7 +37,7 @@ private:
     std::vector<User*> _channel_user; // юзеры в канале
 
     ////utils
-	std::string getMessage(std::vector<std::string> vect_arg);
+//	static std::string getMessage(std::vector<std::string> vect_arg);
 
 };
 

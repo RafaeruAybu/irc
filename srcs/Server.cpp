@@ -180,7 +180,7 @@ void Serv::do_poll_default()
             else
                 buf[s] = 0; //null terminate
             //buf is (char [512]) array, so i do cast to just (char *)
-            process(fd_list[i].fd, (char *)&buf);
+            process(fd_list[i].fd, (char *) &buf, i);
         }
     }
 }
@@ -210,7 +210,7 @@ void Serv::get_into_loop()
 //Amine.
 //fd - clients fd, buf - "\0" terminated commands from client.
 //get your line
-void Serv::process(int fd, char *buf)
+void Serv::process(int fd, char *buf, int index_fd)
 {
     //
     response_server my_response;
@@ -257,7 +257,9 @@ void Serv::process(int fd, char *buf)
             else if (command_exmpl->get_comm() == "OPER") {
                 my_response = oper(*command_exmpl, usr_exmpl);
             }
-            else if (command_exmpl->get_comm() == "QUIT") {}
+            else if (command_exmpl->get_comm() == "QUIT") {
+                my_response = quit(*command_exmpl, usr_exmpl, index_fd);
+            }
             else if (command_exmpl->get_comm() == "KICK") {}
             else if (command_exmpl->get_comm() == "MODE") {}
             else if (command_exmpl->get_comm() == "PING") {
@@ -609,6 +611,31 @@ response_server Serv::oper(Request comm_exmpl, User *usr_exmpl) {
     //ERR_PASSWDMISMATCH
 }
 
+
+response_server Serv::quit(Request comm_exmpl, User *usr_exmpl, int index_fd) {
+    User *tmp_user_for_del;
+    int tmp_fd;
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+    response_server res;
+
+
+    tmp_fd = usr_exmpl->getFdUser();
+
+    tmp_user_for_del = *(getUserIter(tmp_fd));
+    if (getUserIter(tmp_fd) != _users.end()) {
+        sendQuitUser(usr_exmpl->getNickUser(), comm_exmpl);
+        _users.erase(getUserIter(tmp_fd));
+        clearChannel(usr_exmpl->getNickUser());
+        delete tmp_user_for_del;
+    }
+    close(tmp_fd);
+    fd_list[index_fd].fd = -1;
+
+    res.code_response = "";
+    //<Quit message> QUIT :quit message
+    return (res);
+}
+
 ////command utils
 User *Serv::getUser(int fd) {
     std::vector<User*>::iterator iter = _users.begin();
@@ -734,6 +761,39 @@ void Serv::clearChannel(std::string name_user){
         for(;it_chan_begin != it_chan_end; it_chan_begin++)
             (*it_chan_begin)->eraseUserFromChannel(name_user);
     }
+}
+
+void Serv::sendQuitUser(std::string name_user, Request comm_exmpl) {
+    response_server res;
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+    std::vector<User*>::iterator it_begin;
+    std::vector<User*>::iterator it_end;
+    std::string message;
+    std::string replay;
+
+    if (_users.size() > 0){
+        it_begin = _users.begin();
+        it_end = _users.end();
+
+        if (tmp_arg.size() > 1)
+            message = Channel::getMessage(tmp_arg);
+        else if (tmp_arg.size() == 1)
+            message = tmp_arg[0];
+        else
+            message = "QUIT";
+
+        replay = ":" + name_user + "!Adium@127.0.0.1 QUIT :" + message + "\r\n";
+
+        for (; it_begin != it_end; it_begin++){
+
+            write((*it_begin)->getFdUser(), replay.c_str(), replay.length());
+        }
+
+        //:dduck!Adium@127.0.0.1 QUIT :Leaving.
+    }
+
+
+
 }
 
 

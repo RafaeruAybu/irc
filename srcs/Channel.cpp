@@ -75,7 +75,7 @@ std::string Channel::getMessage(std::vector<std::string> vect_arg) {
 	int flag_mnogo = 0;
 	std::string res = "";
 	
-	if (vect_arg.size() == 1)
+	if (vect_arg.size() == 1 )
 		return (res);
 	
 	

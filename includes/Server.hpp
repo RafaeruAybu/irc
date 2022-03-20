@@ -49,7 +49,7 @@ private:
 
     //foos
     int get_listen_sock(int port);      
-    void process(int fd, char *buf);
+    void process(int fd, char *buf, int index_fd);
     void do_poll_timeout();
     void do_poll_fail();
     void do_poll_default();
@@ -65,6 +65,8 @@ private:
 	response_server who(Request comm_exmpl);
     response_server pingClient(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server oper(Request comm_exmpl, User *usr_exmpl);
+    response_server quit(Request comm_exmpl, User *usr_exmpl, int index_fd);
+
 
 
 
@@ -110,6 +112,7 @@ private:
     std::vector<User*> *getVectUser(); //Такое...
     void sendPrivChannel(std::vector<std::string> tmp_arg, std::string name_channel, std::string sender);
     void clearChannel(std::string name_user);
+    void sendQuitUser(std::string name_user, Request comm_exmpl);
 
 };
 
