@@ -29,7 +29,7 @@ User & User::operator= (const User &other)
     return *this;
 }
 
-const int User::getFdUser() {
+int User::getFdUser() {
     return (_fd);
 }
 
@@ -56,7 +56,7 @@ void User::setUserUser(std::vector<std::string> tmp_usr) {
     _realname = tmp_usr[4];
 }
 
-const int User::getFlagReg() {
+int User::getFlagReg() {
     return (_flag_reg);
 }
 
@@ -133,6 +133,12 @@ int User::sendPrivMSG(Request comm_exmpl, std::string sender) { //нет про�
     //oper PRIVMSG dduck :Ent
 }
 
+int User::getFlagOper(){
+    return (_flag_operator);
+}
 
+void User::setFlagOper(){
+    _flag_operator = 1;
+}
 
 

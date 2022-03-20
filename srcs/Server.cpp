@@ -246,15 +246,17 @@ void Serv::process(int fd, char *buf)
             my_response = nick(fd, *command_exmpl, usr_exmpl);
         if (usr_exmpl) { //комманды кроме PASS, NICK, USER не обрабатываются, если User не был добавлен через PASS
             if (command_exmpl->get_comm() == "PRIVMSG") { //AWAY не делаем
-                my_response = privmsg(fd, *command_exmpl, usr_exmpl);
+                my_response = privmsg(*command_exmpl, usr_exmpl);
             }
             else if(command_exmpl->get_comm() == "NOTICE"){
-                my_response = notice(fd, *command_exmpl, usr_exmpl);
+                my_response = notice(*command_exmpl, usr_exmpl);
             }
             else if (command_exmpl->get_comm() == "JOIN") {
                 my_response = join(fd, *command_exmpl, usr_exmpl);
             } //Минимум
-            else if (command_exmpl->get_comm() == "OPER") {}
+            else if (command_exmpl->get_comm() == "OPER") {
+                my_response = oper(*command_exmpl, usr_exmpl);
+            }
             else if (command_exmpl->get_comm() == "QUIT") {}
             else if (command_exmpl->get_comm() == "KICK") {}
             else if (command_exmpl->get_comm() == "MODE") {}
@@ -263,7 +265,7 @@ void Serv::process(int fd, char *buf)
             }
             else if (command_exmpl->get_comm() == "LIST") {} //Список каналов
 			else if (command_exmpl->get_comm() == "WHO") {
-				my_response = who(fd, *command_exmpl, usr_exmpl);
+				my_response = who(*command_exmpl);
 			} //Список юзеров
         
 
@@ -401,7 +403,7 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 
 //Реализация без списков отправки, только одному каналу или юзеру
 //# - отправка в канал
-response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl) {
+response_server Serv::privmsg(Request comm_exmpl, User *usr_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
 //    std::string text_message;
@@ -450,7 +452,7 @@ response_server Serv::privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl
 }
 
 
-response_server Serv::notice(int fd_client, Request comm_exmpl, User *usr_exmpl) {
+response_server Serv::notice(Request comm_exmpl, User *usr_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     std::string reciever;
@@ -542,10 +544,9 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
 }
 
 
-response_server Serv::who(int fd_client, Request comm_exmpl, User *usr_exmpl){
+response_server Serv::who(Request comm_exmpl) {
 	response_server res;
 	std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
-	User* tmp_user;
 	Channel* tmp_channel;
 
 	if (tmp_arg.size() >= 1 && tmp_arg[0].size() > 0){
@@ -580,6 +581,33 @@ response_server Serv::pingClient(int fd_client, Request comm_exmpl, User *usr_ex
     return(res);
 }
 
+
+response_server Serv::oper(Request comm_exmpl, User *usr_exmpl) {
+    response_server res;
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+
+
+    if (tmp_arg.size() < 2){
+        res.code_response = "461";
+        res.str_response = "ERR_NEEDMOREPARAMS";
+    }
+    else if(_oper_pass != tmp_arg[1]){
+        res.code_response = "464";
+        res.str_response = "ERR_PASSWDMISMATCH";
+    }
+    else if (_oper_user == tmp_arg[0]){
+        res.code_response = "381";
+        res.str_response = "RPL_YOUREOPER";
+        usr_exmpl->setFlagOper();
+    }
+    return (res);
+
+    //<user> <password>
+    //ERR_NEEDMOREPARAMS
+    //RPL_YOUREOPER
+    //ERR_NOOPERHOST
+    //ERR_PASSWDMISMATCH
+}
 
 ////command utils
 User *Serv::getUser(int fd) {
@@ -632,10 +660,10 @@ int Serv::checkNick(std::string nick) { //Проверка валидности 
 
 int Serv::getCountCommand(char *buf) {
     int count = 0;
-    std::istringstream iss(buf);
+//    std::istringstream iss(buf);
     std::string str(buf);
 
-    for (int i = 0; i < str.length(); i++){
+    for (size_t i = 0; i < str.length(); i++){
         if (str[i] == '\n')
             count++;
     }

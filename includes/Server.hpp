@@ -59,11 +59,13 @@ private:
     response_server pass(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server nick(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server user(int fd_client, Request comm_exmpl, User *usr_exmpl);
-    response_server privmsg(int fd_client, Request comm_exmpl, User *usr_exmpl);
-    response_server notice(int fd_client, Request comm_exmpl, User *usr_exmpl);
+    response_server privmsg(Request comm_exmpl, User *usr_exmpl);
+    response_server notice(Request comm_exmpl, User *usr_exmpl);
     response_server join(int fd_client, Request comm_exmpl, User *usr_exmpl);
-	response_server who(int fd_client, Request comm_exmpl, User *usr_exmpl);
+	response_server who(Request comm_exmpl);
     response_server pingClient(int fd_client, Request comm_exmpl, User *usr_exmpl);
+    response_server oper(Request comm_exmpl, User *usr_exmpl);
+
 
 
 

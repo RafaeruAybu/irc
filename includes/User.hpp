@@ -21,13 +21,16 @@ public:
 
     User & operator= (const User &other);
 
-    const int getFdUser();
+    int getFdUser();
     const std::string &getNickUser();
     const std::string &getUserUser();
-    const int getFlagReg();
+    int getFlagReg();
+    int getFlagOper();
+
 
     void setNick(std::string nick);
     void setFlagReg();
+    void setFlagOper();
     void setUserUser(std::vector<std::string> tmp_usr);
 
     void sendMTD();
@@ -51,6 +54,7 @@ private:
     int _flag_operator;
     int _flag_away;
     std::string flag;
+
     bool f_logged;
     bool f_operator;
 
