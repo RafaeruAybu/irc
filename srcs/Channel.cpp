@@ -145,10 +145,25 @@ void Channel::sendReplaySenderJoin(std::string nick_sender){
 
 
     }
-    //IRCat 353 oper2 = #cahn :dduck oper1 kek:IRCat 366 oper2 #cahn :End of /NAMES lis:oper2 JOIN :#cahn
-
-    //              Это вроде нет необходимости делать
 //            :IRC 331 dduck #chan_kek :No topic is set
 //            :IRC 353 dduck = #chan_kek :@dduck
 //            :IRC 366 dduck #chan_kek :End of /NAMES list
+}
+
+void Channel::eraseUserFromChannel(std::string name_user){
+    User *tmp_user = getUserChannel(name_user);
+    std::vector<User*>::iterator it_begin;
+    std::vector<User*>::iterator it_end;
+
+    if (tmp_user){
+        it_begin = _channel_user.begin();
+        it_end = _channel_user.end();
+            for(; it_begin != it_end; it_begin++){
+                if ((*it_begin)->getNickUser() == name_user) {
+                    _channel_user.erase(it_begin);
+
+                    break;
+                }
+            }
+    }
 }

@@ -20,9 +20,12 @@ public:
     User* getUserChannel(std::string const &name_user);
     void sendJoinAll(std::string new_user);
     void sendReplaySenderJoin(std::string nick_sender);
-
-    std::string getWhoChannel();
     void sendPrivChannel(std::vector<std::string> vect_arg, std::string sender);
+    std::string getWhoChannel();
+
+    void eraseUserFromChannel(std::string name_user);
+
+
 
 private:
     Channel();

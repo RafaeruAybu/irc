@@ -107,6 +107,7 @@ private:
     Channel* getChannel(std::string channel_name);
     std::vector<User*> *getVectUser(); //Такое...
     void sendPrivChannel(std::vector<std::string> tmp_arg, std::string name_channel, std::string sender);
+    void clearChannel(std::string name_user);
 
 };
 

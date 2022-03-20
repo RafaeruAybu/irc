@@ -40,6 +40,8 @@ todo: - (OPER)
 todo: (KICK) только чопер, кикнуть с канала
 todo: - (KILL, ...)
 
+ todo: eraseUserFromChannel - отправка сообщения всем в канале, что юзер вышел
+
  https://www.lissyara.su/doc/rfc/rfc1459/
  */
 

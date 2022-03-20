@@ -170,6 +170,7 @@ void Serv::do_poll_default()
                 if (getUserIter(fd_list[i].fd) != _users.end()) {
 
                     _users.erase((getUserIter(fd_list[i].fd)));
+                    clearChannel(tmp_user_for_del->getNickUser());
                     delete tmp_user_for_del;
                 }
                 close(fd_list[i].fd);
@@ -693,6 +694,18 @@ Channel* Serv::getChannel(std::string channel_name){
             return (*it_begin);
     }
     return (NULL);
+}
+
+void Serv::clearChannel(std::string name_user){
+    std::vector<Channel*>::iterator it_chan_begin;
+    std::vector<Channel*>::iterator it_chan_end;
+
+    if (channels.size() > 0){
+        it_chan_begin = channels.begin();
+        it_chan_end = channels.end();
+        for(;it_chan_begin != it_chan_end; it_chan_begin++)
+            (*it_chan_begin)->eraseUserFromChannel(name_user);
+    }
 }
 
 
