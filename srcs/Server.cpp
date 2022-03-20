@@ -244,6 +244,8 @@ void Serv::process(int fd, char *buf, int index_fd)
             my_response = user(fd, *command_exmpl, usr_exmpl);
         } else if (command_exmpl->get_comm() == "NICK")
             my_response = nick(fd, *command_exmpl, usr_exmpl);
+
+
         if (usr_exmpl) { //комманды кроме PASS, NICK, USER не обрабатываются, если User не был добавлен через PASS
             if (command_exmpl->get_comm() == "PRIVMSG") { //AWAY не делаем
                 my_response = privmsg(*command_exmpl, usr_exmpl);
@@ -255,12 +257,14 @@ void Serv::process(int fd, char *buf, int index_fd)
                 my_response = join(fd, *command_exmpl, usr_exmpl);
             } //Минимум
             else if (command_exmpl->get_comm() == "OPER") {
-                my_response = oper(*command_exmpl, usr_exmpl);
+                my_response = oper( *command_exmpl, usr_exmpl);
             }
             else if (command_exmpl->get_comm() == "QUIT") {
                 my_response = quit(*command_exmpl, usr_exmpl, index_fd);
             }
-            else if (command_exmpl->get_comm() == "KICK") {}
+            else if (command_exmpl->get_comm() == "KILL") {
+                my_response = kill(*command_exmpl, usr_exmpl);
+            }
             else if (command_exmpl->get_comm() == "MODE") {}
             else if (command_exmpl->get_comm() == "PING") {
                 my_response = pingClient(fd, *command_exmpl, usr_exmpl);
@@ -618,21 +622,72 @@ response_server Serv::quit(Request comm_exmpl, User *usr_exmpl, int index_fd) {
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     response_server res;
 
-
     tmp_fd = usr_exmpl->getFdUser();
 
     tmp_user_for_del = *(getUserIter(tmp_fd));
     if (getUserIter(tmp_fd) != _users.end()) {
-        sendQuitUser(usr_exmpl->getNickUser(), comm_exmpl);
-        _users.erase(getUserIter(tmp_fd));
+//        sendQuitUser(usr_exmpl->getNickUser(), comm_exmpl);
+
+        sendQuitUser(usr_exmpl->getNickUser(), tmp_arg);
         clearChannel(usr_exmpl->getNickUser());
+        _users.erase(getUserIter(tmp_fd));
+
         delete tmp_user_for_del;
+
     }
-    close(tmp_fd);
+    close(tmp_fd); //todo: Узнать, насколько нужная штука
     fd_list[index_fd].fd = -1;
 
     res.code_response = "";
     //<Quit message> QUIT :quit message
+    return (res);
+}
+
+//response_server Serv::kick(Request comm_exmpl, User *usr_exmpl){
+//    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+//    response_server res;
+//}
+
+
+response_server Serv::kill(Request comm_exmpl, User *usr_exmpl){
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+    response_server res;
+    User *drop_user;
+
+    int fd_drop_user;
+
+    if (usr_exmpl->getFlagOper() == 0){
+        res.code_response = "481";
+        res.str_response = "ERR_NOPRIVILEGES";
+    }
+    else if (tmp_arg.size() < 1){
+        res.code_response = "461";
+        res.str_response = "ERR_NEEDMOREPARAMS";
+    }
+    else if(!(getUser(tmp_arg[0]))){
+        res.code_response = "401";
+        res.str_response = "ERR_NOSUCHNICK";
+    }
+    else{
+        drop_user = getUser(tmp_arg[0]);
+        fd_drop_user = drop_user->getFdUser();
+        tmp_arg.erase(tmp_arg.begin());
+        sendQuitUser(drop_user->getNickUser(), tmp_arg);
+        clearChannel(usr_exmpl->getNickUser());
+        _users.erase(getUserIter(fd_drop_user));
+
+        delete drop_user;
+        close(fd_drop_user);
+        //todo: Вот тут как бы надо "fd_list[index_fd].fd = -1;" но хз где взять индекс
+
+
+    }
+
+
+    //ERR_NOPRIVILEGES
+    //ERR_NEEDMOREPARAMS
+    //ERR_NOSUCHNICK
+    //ERR_CANTKILLSERVER
     return (res);
 }
 
@@ -763,59 +818,78 @@ void Serv::clearChannel(std::string name_user){
     }
 }
 
-void Serv::sendQuitUser(std::string name_user, Request comm_exmpl) {
+void Serv::sendQuitUser(std::string name_user, std::vector<std::string> tmp_arg_1) {
     response_server res;
-    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+//    std::vector<std::string> tmp_arg = tmp_arg_1.get_vect_arg();
     std::vector<User*>::iterator it_begin;
     std::vector<User*>::iterator it_end;
     std::string message;
     std::string replay;
 
+    std::cout << "kek 21\n";
     if (_users.size() > 0){
         it_begin = _users.begin();
         it_end = _users.end();
-
-        if (tmp_arg.size() > 0)
-            message = getMessageServ(tmp_arg);
+        std::cout << "kek 22\n";
+        if (tmp_arg_1.size() > 0)
+            message = getMessageServ(tmp_arg_1);
         else
             message = "No reason quit";
+        std::cout << "kek 23\n";
 
         replay = ":" + name_user + "!Adium@127.0.0.1 QUIT :" + message + "\r\n";
+        std::cout << "kek 24\n";
 
         for (; it_begin != it_end; it_begin++){
-
+            std::cout << "kek 25\n";
             write((*it_begin)->getFdUser(), replay.c_str(), replay.length());
         }
+        std::cout << "kek 26\n";
 
         //:dduck!Adium@127.0.0.1 QUIT :Leaving.
     }
 }
 
 std::string Serv::getMessageServ(std::vector<std::string> vect_arg){
-    int flag_mnogo = 0;
     std::string res = "";
 
     if (vect_arg.size() == 0)
         return (res);
+    std::cout << "kek 31\n";
 
     // :1 2 4 -> 1 2 3
     // 1 2 4 -> 1
     // :1 -> 1
+    std::cout << "kek 32\n";
 
     if (vect_arg.size() == 1){ // "1" или ":1"
+        std::cout << "kek 321\n";
         res = vect_arg[0];
-        if (res[0] == ':')
-            res.erase(res[0]);
+        std::cout << "kek 322\n";
+
+        if (res[0] == ':') {
+            std::cout << "kek 323\n";
+
+            res.erase(0);
+            std::cout << "kek 324\n";
+
+        }
+        std::cout << "kek 33\n";
+
     }
     else if(vect_arg.size() > 1){ //"1 2 3" или ":1 2 3"
         if (vect_arg[0][0] != ':')
             res = vect_arg[0];
         else {
+            std::cout << "kek 34\n";
+
             for (size_t i = 0; i < vect_arg.size(); i++) {
                 res += vect_arg[i] + " ";
             }
             res.erase(res.end() - 1);
         }
+        std::cout << "kek 35\n";
+
     }
     return (res);
 }

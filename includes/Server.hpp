@@ -66,6 +66,9 @@ private:
     response_server pingClient(int fd_client, Request comm_exmpl, User *usr_exmpl);
     response_server oper(Request comm_exmpl, User *usr_exmpl);
     response_server quit(Request comm_exmpl, User *usr_exmpl, int index_fd);
+//    response_server kick(Request comm_exmpl, User *usr_exmpl); //кикает с канала, может только чопер
+    response_server kill(Request comm_exmpl, User *usr_exmpl); //кикает с сервера, может только иркоп
+
 
 
 
@@ -112,7 +115,7 @@ private:
     std::vector<User*> *getVectUser(); //Такое...
     void sendPrivChannel(std::vector<std::string> tmp_arg, std::string name_channel, std::string sender);
     void clearChannel(std::string name_user);
-    void sendQuitUser(std::string name_user, Request comm_exmpl);
+    void sendQuitUser(std::string name_user, std::vector<std::string> tmp_arg_1);
 
     std::string getMessageServ(std::vector<std::string> tmp_arg);
 
