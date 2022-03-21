@@ -353,4 +353,3 @@ User *Serv::getUser(std::string nick) {
     }
     return (NULL);
 }
-
