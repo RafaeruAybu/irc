@@ -35,6 +35,10 @@ Serv::Serv(char *port, char *password)
             bufs[i][j] = 0;
         }
     }
+    //init indises
+    i = 0;
+    for (; i < MAX_USERS; i++)
+        bufs_indexes[i] = 0;
 }
 
 //delete server
@@ -164,9 +168,14 @@ void Serv::do_poll_default()
                 break;   //todo test
             }
             else
+            {
                 buf[s] = 0; //null terminate
-            //buf is (char [512]) array, so i do cast to just (char *)
-            process(fd_list[i].fd, (char *)&buf);
+                //here append to bufs
+                for (int j; j < BUFF_SIZE && bufs_indexes[i] < (BUFF_SIZE - 2) && buf[j] != '\0'; j++)
+                    bufs[i][bufs_indexes[i]++] = buf[j];
+                //buf is (char [512]) array, so i do cast to just (char *)
+                process(fd_list[i].fd, (char *)&buf);
+            }
         }
     }
 }

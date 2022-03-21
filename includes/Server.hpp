@@ -72,6 +72,7 @@ private:
     void ban();     //тупа бан
     //params
     char bufs[MAX_USERS][BUFF_SIZE];    //4 Mb size in stack
+    int bufs_indexes[MAX_USERS];
     bool exit_server;
     int listen_socket;                  //listening socket
     std::string _str_password; //new 20.02
