@@ -73,7 +73,7 @@ int main()
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
         printf("socket creation failed...\n");
-        exit(0);
+        exit(1);
     }
     else
         printf("Socket successfully created..\n");
@@ -87,7 +87,7 @@ int main()
     // Binding newly created socket to given IP and verification
     if ((bind(sockfd, (SA*)&servaddr, sizeof(servaddr))) != 0) {
         printf("socket bind failed...\n");
-        exit(0);
+        exit(2);
     }
     else
         printf("Socket successfully binded..\n");
@@ -95,7 +95,7 @@ int main()
     // Now server is ready to listen and verification
     if ((listen(sockfd, 5)) != 0) {
         printf("Listen failed...\n");
-        exit(0);
+        exit(3);
     }
     else
         printf("Server listening..\n");
@@ -105,7 +105,7 @@ int main()
     connfd = accept(sockfd, (SA*)&cli, &len);
     if (connfd < 0) {
         printf("server accept failed...\n");
-        exit(0);
+        exit(4);
     }
     else
         printf("server accept the client...\n");

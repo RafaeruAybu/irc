@@ -15,7 +15,7 @@ int startup(int port)
     if (sock < 0)
     {
         perror("socket fail...\n");
-        exit(2);
+        exit(5);
     }
 
     // 2. When TIME_WAIT is resolved, the server cannot be restarted; the server can be restarted immediately.
@@ -31,14 +31,14 @@ int startup(int port)
     if (bind(sock, (struct sockaddr *)&local, sizeof(local)) < 0)
     {
         perror("bind fail...\n");
-        exit(3);
+        exit(6);
     }
 
     // 4. Get a listening socket
     if (listen(sock, 5) < 0)
     {
         perror("listen fail...\n");
-        exit(4);
+        exit(7);
     }
     return sock;
 }

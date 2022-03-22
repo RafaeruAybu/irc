@@ -622,6 +622,7 @@ response_server Serv::quit(Request comm_exmpl, User *usr_exmpl, int index_fd) {
     tmp_fd = usr_exmpl->getFdUser();
 
     tmp_user_for_del = *(getUserIter(tmp_fd));
+    fd_list[index_fd].fd = -1;
     if (getUserIter(tmp_fd) != _users.end()) {
 //        sendQuitUser(usr_exmpl->getNickUser(), comm_exmpl);
 
@@ -632,8 +633,9 @@ response_server Serv::quit(Request comm_exmpl, User *usr_exmpl, int index_fd) {
         delete tmp_user_for_del;
 
     }
-    close(tmp_fd); //todo: Узнать, насколько нужная штука
-    fd_list[index_fd].fd = -1;
+//    if (tmp_fd != -1)
+//        close(tmp_fd); //todo: Узнать, насколько нужная штука
+
 
     res.code_response = "";
     //<Quit message> QUIT :quit message
@@ -874,6 +876,7 @@ void Serv::sendQuitUser(std::string name_user, std::vector<std::string> tmp_arg_
     std::vector<User*>::iterator it_end;
     std::string message;
     std::string replay;
+    int index_fd;
 
 //    std::cout << "kek 21\n";
     if (_users.size() > 0){
@@ -890,8 +893,25 @@ void Serv::sendQuitUser(std::string name_user, std::vector<std::string> tmp_arg_
 //        std::cout << "kek 24\n";
 
         for (; it_begin != it_end; it_begin++){
-            std::cout << "kek 25\n";
-            write((*it_begin)->getFdUser(), replay.c_str(), replay.length());
+//            std::cout << "kek 25\n";
+            index_fd = getIndexFd((*it_begin)->getFdUser());
+            if (index_fd < 1)
+                break ;
+            std::cout << "index_fd[" << index_fd << "]=" << (*it_begin)->getFdUser() << "\n";
+
+            std::cout << "fd_list" << fd_list[index_fd].fd << "\n";
+            std::cout << "FD=" << (*it_begin)->getFdUser() << "\n";
+            int Errors_sock = send((*it_begin)->getFdUser(), "s ", 0, 1);
+
+            std::cout << "Errors_sock=" << Errors_sock << "\n";
+//            if (fd_list[index_fd].fd != -1)
+                if (Errors_sock < 1)
+            {
+                std::cout << "fd_list" << fd_list[index_fd].fd << "\n";
+                write((*it_begin)->getFdUser(), replay.c_str(), replay.length());
+                std::cout << "fd_list/end" << "\n";
+
+            }
         }
 //        std::cout << "kek 26\n";
 
@@ -950,4 +970,3 @@ int const Serv::getIndexFd(int fd){
     }
     return (0);
 }
-
