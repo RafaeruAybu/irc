@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unistd.h>
+#include <cctype>
 #include "Request.hpp"
 //#include "Server.hpp"
 

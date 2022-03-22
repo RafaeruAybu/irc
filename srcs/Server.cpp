@@ -171,9 +171,11 @@ void Serv::do_poll_default()
 
                     _users.erase((getUserIter(fd_list[i].fd)));
                     clearChannel(tmp_user_for_del->getNickUser());
-                    delete tmp_user_for_del;
+                    if (tmp_user_for_del)
+                        delete tmp_user_for_del;
                 }
-                close(fd_list[i].fd);
+                if (close(fd_list[i].fd) != -1)
+                    close(fd_list[i].fd);
                 fd_list[i].fd = -1;
                 break;   //todo test
             }
