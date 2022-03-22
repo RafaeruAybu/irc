@@ -161,9 +161,14 @@ void Channel::eraseUserFromChannel(std::string name_user){
             for(; it_begin != it_end; it_begin++){
                 if ((*it_begin)->getNickUser() == name_user) {
                     _channel_user.erase(it_begin);
-
                     break;
                 }
             }
     }
+}
+
+std::string Channel::getNickOperChannel(){
+    if (_channel_user.size() < 1)
+        return ("");
+    return (_channel_user[0]->getNickUser());
 }

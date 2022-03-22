@@ -24,6 +24,7 @@ public:
     std::string getWhoChannel();
 
     void eraseUserFromChannel(std::string name_user);
+    std::string getNickOperChannel();
 
 private:
     Channel();
