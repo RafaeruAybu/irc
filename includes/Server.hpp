@@ -71,7 +71,7 @@ private:
 
 
 
-
+    int const getIndexFd(int fd);
 
 
 

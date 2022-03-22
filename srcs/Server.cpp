@@ -519,17 +519,9 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
         	if (!tmp_user) // Юзера еще нет в канале
 			{
 				tmp_channel->addUserChannel(usr_exmpl);
-                tmp_channel->sendReplaySenderJoin(usr_exmpl->getNickUser());
-//            usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
 				tmp_channel->sendJoinAll(usr_exmpl->getNickUser()); //Написали всем в канале
+                tmp_channel->sendReplaySenderJoin(usr_exmpl->getNickUser());
 			}
-	
-	
-			//:kek!Adium@127.0.0.1 JOIN :#chkek - рассылка всем в канале, когда присоединился новый юзер //todo: сделать рассылку всем в Channel._channel_user
-            // kek - новый юзер, #chkek - канал
-
-//            :dduck!12@127.0.0.1 JOIN :#chan_kek - это есть в sendJoinReplay
-
         }
         else{ //Нет такого канала, создаем новый //ERR_NOSUCHCHANNEL
             sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + tmp_arg[0], "ERR_NOSUCHCHANNEL"); //:IRCat 403 oper chan_kek :No such channel
@@ -537,12 +529,9 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
             tmp_channel = getChannel(tmp_arg[0]);
             if (tmp_channel) {
                 tmp_channel->addUserChannel(usr_exmpl);
-//                usr_exmpl->sendJoinReplay(tmp_arg[0]); // Ответили отправителю
                 tmp_channel->sendReplaySenderJoin(usr_exmpl->getNickUser());
                 tmp_channel->sendJoinAll(usr_exmpl->getNickUser()); //Написали всем в канале
             }
-
-
         }
     }
     else{ // Указано больше одного канала
@@ -571,6 +560,7 @@ response_server Serv::who(Request comm_exmpl) {
 	
 	//Request WHO #channel
 	//:IRCat 315 oper oper :End of /WHO list
+    //IRCat 353 oper1 = #ch :@oper2 kek oper1
 
 }
 
@@ -691,6 +681,7 @@ response_server Serv::kill(Request comm_exmpl, User *usr_exmpl){
     User *drop_user;
 
     int fd_drop_user;
+    int index_fd = 0;
 
     if (usr_exmpl->getFlagOper() == 0){
         res.code_response = "481";
@@ -714,16 +705,13 @@ response_server Serv::kill(Request comm_exmpl, User *usr_exmpl){
 
         delete drop_user;
         close(fd_drop_user);
+
+        index_fd = getIndexFd(fd_drop_user);
+        if (index_fd)
+            fd_list[index_fd].fd = -1;
         //todo: Вот тут как бы надо "fd_list[index_fd].fd = -1;" но хз где взять индекс
-
-
     }
 
-
-    //ERR_NOPRIVILEGES
-    //ERR_NEEDMOREPARAMS
-    //ERR_NOSUCHNICK
-    //ERR_CANTKILLSERVER
     return (res);
 }
 
@@ -930,4 +918,11 @@ std::string Serv::getMessageServ(std::vector<std::string> vect_arg){
     return (res);
 }
 
+int const Serv::getIndexFd(int fd){
+    for (int i = 0; i < MAX_USERS; i++){
+        if (fd == fd_list[i].fd)
+            return (i);
+    }
+    return (0);
+}
 

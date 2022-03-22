@@ -32,7 +32,7 @@ void Channel::sendJoinAll(std::string new_user){
         it_begin = _channel_user.begin();
         it_end = _channel_user.end();
         for (; it_begin != it_end; it_begin++) {
-            std::string mes_join_all = ":" + new_user + "!Adium@127.0.0.1 JOIN :" + getNameChannel() + "\r\n";
+            std::string mes_join_all = ":" + new_user + "!" +(*it_begin)->getUserUser() +"@127.0.0.1 JOIN :" + getNameChannel() + "\r\n";
             fd = (*it_begin)->getFdUser();
             write(fd, mes_join_all.c_str(), mes_join_all.length());
         }
@@ -44,10 +44,8 @@ void Channel::sendJoinAll(std::string new_user){
 void Channel::addUserChannel(User *new_user){  //
     User* tmp = getUserChannel(new_user->getNickUser());
 
-    if (!tmp){
-
+    if (!tmp)
         _channel_user.push_back(new_user); //Добавили указатель в вектор указателей
-    }
     else { // ник есть в канале, ничего не делаем
     }
 }
@@ -55,7 +53,6 @@ void Channel::addUserChannel(User *new_user){  //
 std::string Channel::getWhoChannel()
 {
 	std::string res = "";
-	
 	std::vector<User *>::iterator it_begin;
 	std::vector<User *>::iterator it_end;
 	
@@ -77,31 +74,25 @@ std::string Channel::getMessage(std::vector<std::string> vect_arg) {
 	
 	if (vect_arg.size() == 1 )
 		return (res);
-	
-	
 	if (vect_arg.size() > 2) //есть не только #chan_name и первый аргумент
 		flag_mnogo = 1; //Нужен чтобы удалить пробел в конце
-	
 	if(vect_arg.size() > 1 && vect_arg[1].size() > 0 && vect_arg[1][0] != ':')
 		return vect_arg[1]; //если нет ':' возвращаем только первое слово
 	else{
-		for (size_t i = 1; i < vect_arg.size(); i++){
+		for (size_t i = 1; i < vect_arg.size(); i++)
 			res += vect_arg[i] + " ";
-		}
 		if (flag_mnogo)
 			res.erase(res.end() - 1);
 		res.erase(res.begin());
-		std::cout << "get Message res=" << res << "\n";
+//		std::cout << "get Message res=" << res << "\n";
 		return (res);
 	}
 }
-
 
 void Channel::sendPrivChannel(std::vector<std::string> vect_arg, std::string sender){
 	std::string mess;
 	
 	mess = getMessage(vect_arg);
-	
 	std::vector<User *>::iterator it_begin;
 	std::vector<User *>::iterator it_end;
 	
@@ -116,7 +107,6 @@ void Channel::sendPrivChannel(std::vector<std::string> vect_arg, std::string sen
 			}
 		}
 	}
-	
 	//:dduck!Adium@127.0.0.1 PRIVMSG #chan :Hu is hu
 	//:nick_sender PRIVMSG #channel :message
 }
@@ -129,25 +119,16 @@ void Channel::sendReplaySenderJoin(std::string nick_sender){
     std::string str_replay_3;
     int fd;
 
-
     tmp_user = getUserChannel(nick_sender);
-
     if (tmp_user){
         str_replay_1 = "::IRC 331 " + nick_sender + " " + getNameChannel() + " :No topic is set\r\n";
         str_replay_2 = "::IRC 353 " + nick_sender + " = " + getNameChannel() + " :@" + getWhoChannel() + "\r\n";
-//        std::cout << "str_replay_2 = " << str_replay_2 ;
         str_replay_3 = "::IRC 366 " + nick_sender + " " + getNameChannel() + " :End of /NAMES list\r\n";
-
         fd = tmp_user->getFdUser();
         write(fd, str_replay_1.c_str(), str_replay_1.length());
         write(fd, str_replay_2.c_str(), str_replay_2.length());
         write(fd, str_replay_3.c_str(), str_replay_3.length());
-
-
     }
-//            :IRC 331 dduck #chan_kek :No topic is set
-//            :IRC 353 dduck = #chan_kek :@dduck
-//            :IRC 366 dduck #chan_kek :End of /NAMES list
 }
 
 void Channel::eraseUserFromChannel(std::string name_user){
