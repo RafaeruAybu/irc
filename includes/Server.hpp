@@ -68,6 +68,8 @@ private:
     response_server quit(Request comm_exmpl, User *usr_exmpl, int index_fd);
     response_server kill(Request comm_exmpl, User *usr_exmpl); //кикает с сервера, может только иркоп
     response_server kick(Request comm_exmpl, User *usr_exmpl); //кикает с канала, может только чопер
+    response_server list(Request comm_exmpl, User *usr_exmpl);
+
 
 
 

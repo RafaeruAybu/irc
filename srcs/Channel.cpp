@@ -153,3 +153,16 @@ std::string Channel::getNickOperChannel(){
         return ("");
     return (_channel_user[0]->getNickUser());
 }
+
+std::string Channel::getNumberUsers(){
+    size_t i;
+    std::string str_res;
+    std::stringstream ss;
+    for (i = 0; i < _channel_user.size(); i++){
+    }
+
+    ss << i;
+    str_res = ss.str();
+    return (str_res);
+
+}

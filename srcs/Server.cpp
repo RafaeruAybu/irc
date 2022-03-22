@@ -272,7 +272,9 @@ void Serv::process(int fd, char *buf, int index_fd)
             else if (command_exmpl->get_comm() == "PING") {
                 my_response = pingClient(fd, *command_exmpl, usr_exmpl);
             }
-            else if (command_exmpl->get_comm() == "LIST") {} //Список каналов
+            else if (command_exmpl->get_comm() == "LIST") {
+                my_response = list(*command_exmpl, usr_exmpl);
+            } //Список каналов
 			else if (command_exmpl->get_comm() == "WHO") {
 				my_response = who(*command_exmpl);
 			} //Список юзеров
@@ -660,20 +662,13 @@ response_server Serv::kick(Request comm_exmpl, User *usr_exmpl){
     else{
         tmp_channel->eraseUserFromChannel(tmp_arg[1]);
     }
-
-
-
-
-
     //ERR_NEEDMOREPARAMS
     //ERR_NOSUCHCHANNEL
     //ERR_BADCHANMASK
     //ERR_CHANOPRIVSNEEDED
     //ERR_NOTONCHANNEL
-
     return (res);
 }
-
 
 response_server Serv::kill(Request comm_exmpl, User *usr_exmpl){
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
@@ -705,14 +700,42 @@ response_server Serv::kill(Request comm_exmpl, User *usr_exmpl){
 
         delete drop_user;
         close(fd_drop_user);
-
         index_fd = getIndexFd(fd_drop_user);
         if (index_fd)
             fd_list[index_fd].fd = -1;
-        //todo: Вот тут как бы надо "fd_list[index_fd].fd = -1;" но хз где взять индекс
     }
-
     return (res);
+}
+
+response_server Serv::list(Request comm_exmpl, User *usr_exmpl){
+    std::vector<Channel*>::iterator iter_begin = channels.begin();
+    std::vector<Channel*>::iterator iter_end = channels.end();
+    std::string mes_321;
+    std::string mes_322;
+    std::string mes_323;
+    response_server res;
+
+
+    mes_321 = ":IRC 321 " + usr_exmpl->getNickUser() + " Channel :Users Name\n\r";
+    mes_323 = ":IRC 323 " + usr_exmpl->getNickUser() + " :End of /LIST\n\r";
+
+    write(usr_exmpl->getFdUser(), mes_321.c_str(), mes_321.length()); // Отправка ответа в сокет
+
+    for (; iter_begin != iter_end; iter_begin++){
+        mes_322 = ":IRC 322 " + usr_exmpl->getNickUser() + " " + (*iter_begin)->getNameChannel() + " " + (*iter_begin)->getNumberUsers() + "\n\r";
+        write(usr_exmpl->getFdUser(), mes_322.c_str(), mes_322.length());
+
+    }
+    write(usr_exmpl->getFdUser(), mes_323.c_str(), mes_323.length()); // Отправка ответа в сокет
+
+    res.code_response = "";
+    return (res);
+
+//    :IRC 321 oper1 Channel :Users  Name
+//    :IRC 322 oper1 #ch1 1
+//    :IRC 322 oper1 #ch2 1
+//    :IRC 322 oper1 #ch4 1
+//    :IRC 323 oper1 :End of /LIST
 }
 
 ////command utils

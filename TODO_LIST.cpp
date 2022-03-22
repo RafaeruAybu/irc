@@ -39,7 +39,7 @@
 (KICK) только чопер, кикнуть с канала --выдает ERR_NOSUCHCHANNEL
 
 ----Дополнительно
-todo: QUIT
+QUIT
 todo: (LIST)
 todo: (PART)
 
