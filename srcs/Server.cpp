@@ -174,10 +174,10 @@ void Serv::do_poll_default()
                     if (tmp_user_for_del)
                         delete tmp_user_for_del;
                 }
-                if (close(fd_list[i].fd) != -1)
+                if (fd_list[i].fd != -1)
                     close(fd_list[i].fd);
                 fd_list[i].fd = -1;
-                break;   //todo test
+                break;
             }
             else
                 buf[s] = 0; //null terminate
@@ -229,7 +229,6 @@ void Serv::process(int fd, char *buf, int index_fd)
     std::cout << "User[" << fd << "]: " << buf << std::endl;
     count_command = getCountCommand(buf);
 
-    //todo delete and do it right
     for (int i = 0; i < count_command; i++) {
         tmp_buf = getTmpBuf(i, buf);
 //        std::cout << "tmp_buf " << i << tmp_buf << '\n';
