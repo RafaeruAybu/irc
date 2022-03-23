@@ -330,7 +330,7 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 //    std::cout << "*NICK\n";
 
     if (tmp_arg.size() != 0)
-        check_res = checkNick(tmp_arg[0]);
+        check_res = checkNick(toLowerString(tmp_arg[0]));
 //    check_res = checkNick();
 
 
@@ -513,11 +513,11 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
         res.str_response = "ERR_NEEDMOREPARAMS";
     }
     else if (tmp_arg.size() == 1 && tmp_arg[0][0] != '#'){ //Если нет '#' - реплаим что нет канала, новый не создаем
-        sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + tmp_arg[0], "ERR_NOSUCHCHANNEL"); //debug
+        sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + toLowerString(tmp_arg[0]), "ERR_NOSUCHCHANNEL"); //debug
 
     }
     else if(tmp_arg.size() == 1) { //valid
-        tmp_channel = getChannel(tmp_arg[0]);
+        tmp_channel = getChannel(toLowerString(tmp_arg[0]));
         if (tmp_channel){ //уже есть такой канал //
         	tmp_user = tmp_channel->getUserChannel(usr_exmpl->getNickUser());
         	if (!tmp_user) // Юзера еще нет в канале
@@ -528,9 +528,9 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
 			}
         }
         else{ //Нет такого канала, создаем новый //ERR_NOSUCHCHANNEL
-            sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + tmp_arg[0], "ERR_NOSUCHCHANNEL"); //:IRCat 403 oper chan_kek :No such channel
-            channels.push_back(new Channel(tmp_arg[0], getVectUser())); //"#" + ??
-            tmp_channel = getChannel(tmp_arg[0]);
+            sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + toLowerString(tmp_arg[0]), "ERR_NOSUCHCHANNEL"); //:IRCat 403 oper chan_kek :No such channel
+            channels.push_back(new Channel(toLowerString(tmp_arg[0]), getVectUser())); //"#" + ??
+            tmp_channel = getChannel(toLowerString(tmp_arg[0]));
             if (tmp_channel) {
                 tmp_channel->addUserChannel(usr_exmpl);
                 tmp_channel->sendReplaySenderJoin(usr_exmpl->getNickUser());
