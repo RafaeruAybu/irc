@@ -28,7 +28,7 @@
 #define MAX_USERS 1024      //user nums in 
 #define POLL_TIMEOUT 3000   //poll timeout time
 #define BUFF_SIZE 512       //fd read buff size
-#define TIMEOUT 30          //timeout PING seconds
+#define TIMEOUT 10          //timeout PING seconds
 
 typedef struct response_server{
 	std::string code_response;
@@ -64,7 +64,7 @@ private:
     response_server join(int fd_client, Request comm_exmpl, User *usr_exmpl);
 	response_server who(Request comm_exmpl);
     response_server pingClient(int fd_client, Request comm_exmpl);
-    response_server pongClient(Request comm_exmpl, User *usr_exmpl);
+    response_server pongClient(Request comm_exmpl, User *usr_exmpl, int index_fd);
     response_server oper(Request comm_exmpl, User *usr_exmpl);
     response_server quit(Request comm_exmpl, User *usr_exmpl, int index_fd);
     response_server kill(Request comm_exmpl, User *usr_exmpl); //кикает с сервера, может только иркоп
@@ -84,9 +84,10 @@ private:
     struct pollfd fd_list[MAX_USERS];   //fd list to poll
     std::vector<User*> _users;          //userlist
     std::vector<Channel*> channels;      //channels
+    std::time_t arr_timestamp[MAX_USERS];
 
     std::string _oper_user;
-    std::string _oper_pass ;
+    std::string _oper_pass;
 
     ////command utils
     User *getUser(int fd);

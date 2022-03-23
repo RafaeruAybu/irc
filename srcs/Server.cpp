@@ -38,6 +38,9 @@ Serv::Serv(char *port, char *password)
             bufs[i][j] = 0;
         }
     }
+    for (long i = 0; i < MAX_USERS; i++){
+        arr_timestamp[i] = -1;
+    }
 }
 
 //delete server
@@ -49,25 +52,22 @@ Serv::~Serv()
 int Serv::get_listen_sock(int port)
 {
     int sock = socket(AF_INET, SOCK_STREAM, 0); // get new socket of type sock_stream ipv4
-    if (sock < 0) //check if good todo can be done using macros
+    if (sock < 0) //check if good
         throw "failed getting sock...";
     int opt = 1;
     if (fcntl(sock, F_SETFL, O_NONBLOCK))
         throw "Could not set non-blocking socket...";
-    setsockopt(sock, SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt)); //todo explain
+    setsockopt(sock, SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
     struct sockaddr_in local;
     local.sin_family = AF_INET;
     local.sin_addr.s_addr = htonl(INADDR_ANY); //any type address
     local.sin_port = htons(port); //port number to listen
-
     //binding port
     if (bind(sock,(struct sockaddr *)&local, sizeof(local)) < 0)
         throw "bind failed...";
-    
     //prepare sock to listen
     if (listen(sock, 5) < 0)
         throw "listen failed";
-    
     return sock;
 }
 
@@ -76,45 +76,75 @@ void Serv::do_poll_timeout()
 {
     std::vector<User*>::iterator it_begin;
     std::vector<User*>::iterator it_end;
-    int i;
-    std::time_t timestamp;
     std::time_t realTime;
     User* tmp_user_for_del;
 
+    User* tmp_user_for_fd;
+
     std::string ping_str("PING 1648063017\r\n");
-    if (!_users.empty()){
-        it_begin = _users.begin();
-        it_end = _users.end();
-        for (; it_begin != it_end; it_begin++){
-            int ret = write((*it_begin)->getFdUser(), ping_str.c_str(), ping_str.length());
-            if (ret <= 0) {
-                std::cout << "Error: sending ping" << std::endl;
-                return ;
-            }
-        }
-        it_begin = _users.begin();
-        for (; it_begin != it_end; it_begin++){
+
+
+
+    for (int i = 1; i < MAX_USERS; i++) {
+        if (arr_timestamp[i] != -1) {
+            write(fd_list[i].fd, ping_str.c_str(), ping_str.length());
             realTime = std::time(NULL);
-            timestamp = (*it_begin)->getTimeStamp();
-            if (realTime - timestamp >= TIMEOUT){
-                i = getIndexFd((*it_begin)->getFdUser());
-                if (i != 0) {
-                    if (_users.size() > 0) {
-                        tmp_user_for_del = *(getUserIter(fd_list[i].fd));
-                        if (getUserIter(fd_list[i].fd) != _users.end()) {
-                            _users.erase((getUserIter(fd_list[i].fd)));
-                            clearChannel(tmp_user_for_del->getNickUser());
-                            if (tmp_user_for_del)
-                                delete tmp_user_for_del;
-                        }
+            if (realTime - arr_timestamp[i] >= TIMEOUT) {
+                tmp_user_for_fd = getUser(fd_list[i].fd);
+                if (tmp_user_for_fd) {
+                    tmp_user_for_del = *(getUserIter(fd_list[i].fd));
+                    if (getUserIter(fd_list[i].fd) != _users.end()) {
+                        _users.erase((getUserIter(fd_list[i].fd)));
+                        clearChannel(tmp_user_for_del->getNickUser());
+                        if (tmp_user_for_del)
+                            delete tmp_user_for_del;
                     }
-                    if (fd_list[i].fd != -1)
-                        close(fd_list[i].fd);
-                    fd_list[i].fd = -1;
                 }
+                if (fd_list[i].fd != -1) {
+                    close(fd_list[i].fd);
+                }
+                std::cout << "close_fd[" << fd_list[i].fd << "]\n";
+                fd_list[i].fd = -1;
+                arr_timestamp[i] = -1;
             }
         }
     }
+
+
+
+//    if (!_users.empty()){
+//        it_begin = _users.begin();
+//        it_end = _users.end();
+//        for (; it_begin != it_end; it_begin++){
+//            int ret = write((*it_begin)->getFdUser(), ping_str.c_str(), ping_str.length());
+//            if (ret <= 0) {
+//                std::cout << "Error: sending ping" << std::endl;
+//                return ;
+//            }
+//        }
+//        it_begin = _users.begin();
+//        for (; it_begin != it_end; it_begin++){
+//            realTime = std::time(NULL);
+//            timestamp = (*it_begin)->getTimeStamp();
+//            if (realTime - timestamp >= TIMEOUT){
+//                i = getIndexFd((*it_begin)->getFdUser());
+//                if (i != 0) {
+//                    if (_users.size() > 0) {
+//                        tmp_user_for_del = *(getUserIter(fd_list[i].fd));
+//                        if (getUserIter(fd_list[i].fd) != _users.end()) {
+//                            _users.erase((getUserIter(fd_list[i].fd)));
+//                            clearChannel(tmp_user_for_del->getNickUser());
+//                            if (tmp_user_for_del)
+//                                delete tmp_user_for_del;
+//                        }
+//                    }
+//                    if (fd_list[i].fd != -1)
+//                        close(fd_list[i].fd);
+//                    fd_list[i].fd = -1;
+//                }
+//            }
+//        }
+//    }
 }
 
 void Serv::do_poll_fail()
@@ -146,6 +176,7 @@ int Serv::get_new_connection()
     {
         fd_list[i].fd = new_sock;
         fd_list[i].events = POLLIN;
+        arr_timestamp[i] = std::time(NULL);
     }
     else
         close(new_sock);
@@ -260,6 +291,9 @@ void Serv::process(int fd, char *buf, int index_fd)
             my_response = user(fd, *command_exmpl, usr_exmpl);
         } else if (command_exmpl->get_comm() == "NICK")
             my_response = nick(fd, *command_exmpl, usr_exmpl);
+        else if (command_exmpl->get_comm() == "PONG") {
+            my_response = pongClient(*command_exmpl, usr_exmpl, index_fd);
+        }
 
         if (usr_exmpl) { //комманды кроме PASS, NICK, USER не обрабатываются, если User не был добавлен через PASS
             if (command_exmpl->get_comm() == "PRIVMSG") { //AWAY не делаем
@@ -283,9 +317,7 @@ void Serv::process(int fd, char *buf, int index_fd)
             else if (command_exmpl->get_comm() == "KICK") {
                 my_response = kick(*command_exmpl, usr_exmpl);
             }
-            else if (command_exmpl->get_comm() == "PONG") {
-                my_response = pongClient(*command_exmpl, usr_exmpl);
-            }
+
             else if (command_exmpl->get_comm() == "PING") {
                 my_response = pingClient(fd, *command_exmpl);
             }
@@ -540,15 +572,19 @@ response_server Serv::pingClient(int fd_client, Request comm_exmpl) {
     return(res);
 }
 
-response_server Serv::pongClient(Request comm_exmpl, User *usr_exmpl) {
+response_server Serv::pongClient(Request comm_exmpl, User *usr_exmpl, int index_fd) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     std::time_t result;
+
+
     if (tmp_arg.size() == 1){
         if (tmp_arg[0] == "1648063017"){
             result = std::time(NULL);
-            usr_exmpl->setTimeStamp(result);
-            std::cout << "PONG timestamp=" << result << "\n";
+            if(usr_exmpl)
+                usr_exmpl->setTimeStamp(result);
+            arr_timestamp[index_fd] = std::time(NULL);
+//            std::cout << "PONG timestamp=" << result << "\n";
             //обновляем timestamp
         }
     }
