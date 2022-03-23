@@ -1,40 +1,31 @@
 #include "../includes/Server.hpp"
 #include "../includes/Request.hpp"
 
-//init server
-Serv::Serv(char *port, char *password)
-{
+Serv::Serv(char *port, char *password) {
     exit_server = false;
-    _str_password = password; //new 20.02
+    _str_password = password;
     _oper_user = "dduk";
     _oper_pass = "kudd";
-
     this->password = atoi(password);
-    listen_socket = get_listen_sock(atoi(port)); //get listen sock
-    num = sizeof(fd_list) / sizeof(fd_list[0]); //num of fds
+    listen_socket = get_listen_sock(atoi(port));
+    num = sizeof(fd_list) / sizeof(fd_list[0]);
     int i = 0;
-    for (; i < num; i++) //init fd_list
-    {
+    for (; i < num; i++) {
         fd_list[i].fd = -1;
-        fd_list[i].events = 0; //set of events
-        fd_list[i].revents = 0; //r event???
+        fd_list[i].events = 0;
+        fd_list[i].revents = 0;
     }
     i = 0;
-    for (; i < num; i++) // add read-only events
-    {
-        if (fd_list[i].fd == -1)
-        {
+    for (; i < num; i++) {
+        if (fd_list[i].fd == -1) {
             fd_list[i].fd = listen_socket;
             fd_list[i].events = POLLIN;
             break;
         }
     }
-    //init bufs
     i = 0;
-    for (; i < MAX_USERS; i++) //user
-    {
-        for (int j = 0; j < BUFF_SIZE; j++) //char
-        {
+    for (; i < MAX_USERS; i++) {
+        for (int j = 0; j < BUFF_SIZE; j++) {
             bufs[i][j] = 0;
         }
     }
@@ -43,16 +34,13 @@ Serv::Serv(char *port, char *password)
     }
 }
 
-//delete server
 Serv::~Serv()
 {
 }
 
-//get listening socket
-int Serv::get_listen_sock(int port)
-{
-    int sock = socket(AF_INET, SOCK_STREAM, 0); // get new socket of type sock_stream ipv4
-    if (sock < 0) //check if good
+int Serv::get_listen_sock(int port) {
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0)
         throw "failed getting sock...";
     int opt = 1;
     if (fcntl(sock, F_SETFL, O_NONBLOCK))
@@ -60,31 +48,22 @@ int Serv::get_listen_sock(int port)
     setsockopt(sock, SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
     struct sockaddr_in local;
     local.sin_family = AF_INET;
-    local.sin_addr.s_addr = htonl(INADDR_ANY); //any type address
-    local.sin_port = htons(port); //port number to listen
-    //binding port
+    local.sin_addr.s_addr = htonl(INADDR_ANY);
+    local.sin_port = htons(port);
     if (bind(sock,(struct sockaddr *)&local, sizeof(local)) < 0)
         throw "bind failed...";
-    //prepare sock to listen
     if (listen(sock, 5) < 0)
         throw "listen failed";
     return sock;
 }
 
-//todo maybe implement close server
-void Serv::do_poll_timeout()
-{
+void Serv::do_poll_timeout() {
     std::vector<User*>::iterator it_begin;
     std::vector<User*>::iterator it_end;
     std::time_t realTime;
     User* tmp_user_for_del;
-
     User* tmp_user_for_fd;
-
     std::string ping_str("PING 1648063017\r\n");
-
-
-
     for (int i = 1; i < MAX_USERS; i++) {
         if (arr_timestamp[i] != -1) {
             write(fd_list[i].fd, ping_str.c_str(), ping_str.length());
@@ -109,71 +88,29 @@ void Serv::do_poll_timeout()
             }
         }
     }
-
-
-
-//    if (!_users.empty()){
-//        it_begin = _users.begin();
-//        it_end = _users.end();
-//        for (; it_begin != it_end; it_begin++){
-//            int ret = write((*it_begin)->getFdUser(), ping_str.c_str(), ping_str.length());
-//            if (ret <= 0) {
-//                std::cout << "Error: sending ping" << std::endl;
-//                return ;
-//            }
-//        }
-//        it_begin = _users.begin();
-//        for (; it_begin != it_end; it_begin++){
-//            realTime = std::time(NULL);
-//            timestamp = (*it_begin)->getTimeStamp();
-//            if (realTime - timestamp >= TIMEOUT){
-//                i = getIndexFd((*it_begin)->getFdUser());
-//                if (i != 0) {
-//                    if (_users.size() > 0) {
-//                        tmp_user_for_del = *(getUserIter(fd_list[i].fd));
-//                        if (getUserIter(fd_list[i].fd) != _users.end()) {
-//                            _users.erase((getUserIter(fd_list[i].fd)));
-//                            clearChannel(tmp_user_for_del->getNickUser());
-//                            if (tmp_user_for_del)
-//                                delete tmp_user_for_del;
-//                        }
-//                    }
-//                    if (fd_list[i].fd != -1)
-//                        close(fd_list[i].fd);
-//                    fd_list[i].fd = -1;
-//                }
-//            }
-//        }
-//    }
 }
 
-void Serv::do_poll_fail()
-{
+void Serv::do_poll_fail() {
     std::cout << "poll fail..." << std::endl;
 }
 
-int Serv::get_new_connection()
-{
-    //provide a connectinon acceptance here
+int Serv::get_new_connection() {
     struct sockaddr_in client;
     socklen_t len = sizeof(client);
     int new_sock = accept(listen_socket,(struct sockaddr *)&client,&len);
-    if (new_sock < 0)
-    {
+    if (new_sock < 0) {
         if (errno != EWOULDBLOCK)
             std::cout << "accept fail..." << std::endl;
-        return -1; //stop if failed to accept
+        return -1;
     }
-    if (fcntl(new_sock, F_SETFL, O_NONBLOCK)) //make new sock is non-blocking
+    if (fcntl(new_sock, F_SETFL, O_NONBLOCK))
         throw "Could not set non-blocking socket...";
     int i = 0;
-    for (; i < num; i++)
-    {
+    for (; i < num; i++) {
         if (fd_list[i].fd == -1)
             break;
     }
-    if (i < num)
-    {
+    if (i < num) {
         fd_list[i].fd = new_sock;
         fd_list[i].events = POLLIN;
         arr_timestamp[i] = std::time(NULL);
@@ -186,38 +123,27 @@ int Serv::get_new_connection()
     return 0;
 }
 
-void Serv::do_poll_default()
-{
+void Serv::do_poll_default() {
     User* tmp_user_for_del;
-
-    //if it is a listener fd, call an accept to accept new connection
-    //if it is a client fd, read the data
     int i = 0;
-    for (; i < num; i++) //for every fd
-    {
-        if (fd_list[i].fd == -1) //if fd sock is free(empty)
+    for (; i < num; i++) {
+        if (fd_list[i].fd == -1)
             continue;
-        if (fd_list[i].fd == listen_socket && (fd_list[i].revents & POLLIN)) //if socket is listen_sock and pollin event
-        {
+        if (fd_list[i].fd == listen_socket && (fd_list[i].revents & POLLIN)) {
             if (get_new_connection() != 0)
                 break ;
             else
                 continue ;
         }
-        //todo refactor code like: process_connection();
-        // For all normall fds
-        if (fd_list[i].revents & POLLIN)
-        {
+        if (fd_list[i].revents & POLLIN) {
             char buf[BUFF_SIZE];
             ssize_t s = read(fd_list[i].fd, buf, sizeof(buf)-1);
-            if (s < 0)
-            {
+            if (s < 0) {
                 if (errno != EWOULDBLOCK)
                     std::cout << "read failed..." << std::endl;
                 break;
             }
-            else if (s == 0)
-            {
+            else if (s == 0) {
                 std::cout << "client quit..." << std::endl;
                 if (_users.size() > 0) {
                     tmp_user_for_del = *(getUserIter(fd_list[i].fd));
@@ -232,29 +158,25 @@ void Serv::do_poll_default()
                 if (fd_list[i].fd != -1)
                     close(fd_list[i].fd);
                 fd_list[i].fd = -1;
-                break;   //todo test
+                break;
             }
             else
-                buf[s] = 0; //null terminate
-            //buf is (char [512]) array, so i do cast to just (char *)
+                buf[s] = 0;
             process(fd_list[i].fd, (char *) &buf, i);
         }
     }
 }
 
-void Serv::get_into_loop()
-{
-    while (!exit_server) //todo end_server
-    {
-        switch(poll(fd_list, num, POLL_TIMEOUT)) // 3000 is a timeout time
-        {
-            case 0: //timeout
+void Serv::get_into_loop() {
+    while (!exit_server) {
+        switch(poll(fd_list, num, POLL_TIMEOUT)) {
+            case 0:
                 do_poll_timeout();
                 continue ;
-            case -1: //fails
+            case -1:
                 do_poll_fail();
                 continue ;
-            default: //if poll worked as expected
+            default:
                 do_poll_default();
                 break ;
         }
@@ -262,29 +184,19 @@ void Serv::get_into_loop()
     return ;
 }
 
-//Welcom to processor m8. Here using magic, buf itself, gets its meaning.
-//Here Zh3nuke AND S4ny4 are going to do their jobs.
-//Amine.
-//fd - clients fd, buf - "\0" terminated commands from client.
-//get your line
-void Serv::process(int fd, char *buf, int index_fd)
-{
+void Serv::process(int fd, char *buf, int index_fd) {
     response_server my_response;
     Request *command_exmpl;
     User* usr_exmpl = getUser(fd);
     int count_command;
     std::string tmp_buf;
     std::string response_serv = "";
-
     std::cout << "User[" << fd << "]: " << buf << std::endl;
     count_command = getCountCommand(buf);
-
-    //todo delete and do it right
     for (int i = 0; i < count_command; i++) {
         tmp_buf = getTmpBuf(i, buf);
         usr_exmpl = getUser(fd);
-
-        command_exmpl = new Request(tmp_buf); //todo: Поменять на tmp_buf, когда разберусь с несколькими \r\n в строке
+        command_exmpl = new Request(tmp_buf);
         if (command_exmpl->get_comm() == "PASS")
             my_response = pass(fd, *command_exmpl, usr_exmpl);
         else if (command_exmpl->get_comm() == "USER") {
@@ -294,9 +206,8 @@ void Serv::process(int fd, char *buf, int index_fd)
         else if (command_exmpl->get_comm() == "PONG") {
             my_response = pongClient(*command_exmpl, usr_exmpl, index_fd);
         }
-
-        if (usr_exmpl) { //комманды кроме PASS, NICK, USER не обрабатываются, если User не был добавлен через PASS
-            if (command_exmpl->get_comm() == "PRIVMSG") { //AWAY не делаем
+        if (usr_exmpl) {
+            if (command_exmpl->get_comm() == "PRIVMSG") {
                 my_response = privmsg(*command_exmpl, usr_exmpl);
             }
             else if(command_exmpl->get_comm() == "NOTICE"){
@@ -328,7 +239,7 @@ void Serv::process(int fd, char *buf, int index_fd)
 				my_response = who(*command_exmpl);
 			}
         }
-        if (my_response.code_response.length() != 0) //Если есть числовые ответы - формируем строку для вывода в fd
+        if (my_response.code_response.length() != 0)
             usr_exmpl->sendSTDReplay(my_response.code_response, my_response.str_response);
         delete command_exmpl;
         my_response.code_response.clear();
@@ -337,23 +248,20 @@ void Serv::process(int fd, char *buf, int index_fd)
     }
 }
 
-
-////// Command_method
-
 response_server Serv::pass(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 	response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
-    if (((tmp_arg.size() != 0) && tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':')) //Удаление ':' для Adium
+    if (((tmp_arg.size() != 0) && tmp_arg[0].size() != 0) && (tmp_arg[0][0] == ':'))
         tmp_arg[0].erase(tmp_arg[0].begin());
-    if (tmp_arg.size() == 0){ // введен только PASS
+    if (tmp_arg.size() == 0){
         sendNoUser(fd_client, "461", "ERR_NEEDMOREPARAMS");
     }
-    else if (usr_exmpl && usr_exmpl->getFlagReg()){ // уже есть в vector<Users>
+    else if (usr_exmpl && usr_exmpl->getFlagReg()){
         res.code_response = "462";
         res.str_response = "PASS ERR_ALREADYREGISTRED";
     }
-    else if (tmp_arg[0] == _str_password || _str_password.length() == 0) { //valid pass
-        _users.push_back(new User(fd_client)); // Написан новый конструктор для fd
+    else if (tmp_arg[0] == _str_password || _str_password.length() == 0) {
+        _users.push_back(new User(fd_client));
     }
 	return (res);
 }
@@ -362,7 +270,6 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     int check_res = 0;
-
     if (tmp_arg.size() != 0)
         check_res = checkNick(toLowerString(tmp_arg[0]));
     if (!usr_exmpl){
@@ -387,7 +294,6 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
-
     int count_arg = tmp_arg.size();
     std::vector<std::string> tmp_usr;
     std::string tmp_realname = "";
@@ -413,7 +319,7 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
             tmp_realname += " ";
         }
         tmp_realname.erase(tmp_realname.begin());
-        tmp_realname.erase(tmp_realname.end()); //del last " "
+        tmp_realname.erase(tmp_realname.end());
         tmp_usr.push_back(tmp_realname);
         if (usr_exmpl->getUserUser() == "Undefined")
             usr_exmpl->setUserUser(tmp_usr);
@@ -434,7 +340,6 @@ response_server Serv::privmsg(Request comm_exmpl, User *usr_exmpl) {
     std::string reciever;
     User *usr_reciever;
     Channel* tmp_channel;
-
     if (tmp_arg.size() < 2) {
         if (tmp_arg.size() == 0) {
             res.code_response = "411";
@@ -446,7 +351,7 @@ response_server Serv::privmsg(Request comm_exmpl, User *usr_exmpl) {
         return (res);
     }
     reciever = tmp_arg[0];
-    if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал('#' в nick не пройдет валидацию)
+    if((reciever.find('#') != std::string::npos)){
 		tmp_channel = getChannel(reciever);
 		if (tmp_channel){
 			tmp_channel->sendPrivChannel(tmp_arg, usr_exmpl->getNickUser());
@@ -473,7 +378,6 @@ response_server Serv::notice(Request comm_exmpl, User *usr_exmpl) {
     std::string reciever;
     User *usr_reciever;
     Channel* tmp_channel;
-
     if (tmp_arg.size() < 2) {
         if (tmp_arg.size() == 0) {
             res.code_response = "";
@@ -483,7 +387,7 @@ response_server Serv::notice(Request comm_exmpl, User *usr_exmpl) {
         return (res);
     }
     reciever = tmp_arg[0];
-    if((reciever.find('#') != std::string::npos)){ //Нашли '#' - значит сообщение в канал('#' в nick не пройдет валидацию)
+    if((reciever.find('#') != std::string::npos)){
 		tmp_channel = getChannel(reciever);
 		if (tmp_channel){
 			tmp_channel->sendPrivChannel(tmp_arg, usr_exmpl->getNickUser());
@@ -494,49 +398,45 @@ response_server Serv::notice(Request comm_exmpl, User *usr_exmpl) {
         if (usr_reciever){
             usr_reciever->sendPrivMSG(comm_exmpl, usr_exmpl->getNickUser());
         }
-
     }
     return (res);
 }
 
-response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl){
+response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
-
     Channel* tmp_channel;
     User* tmp_user;
-
     if (tmp_arg.size() == 0){
         res.code_response = "461";
         res.str_response = "ERR_NEEDMOREPARAMS";
     }
-    else if (tmp_arg.size() == 1 && tmp_arg[0][0] != '#'){ //Если нет '#' - реплаим что нет канала, новый не создаем
-        sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + toLowerString(tmp_arg[0]), "ERR_NOSUCHCHANNEL"); //debug
-
+    else if (tmp_arg.size() == 1 && tmp_arg[0][0] != '#'){
+        sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + toLowerString(tmp_arg[0]), "ERR_NOSUCHCHANNEL");
     }
-    else if(tmp_arg.size() == 1) { //valid
+    else if(tmp_arg.size() == 1) {
         tmp_channel = getChannel(toLowerString(tmp_arg[0]));
-        if (tmp_channel){ //уже есть такой канал //
+        if (tmp_channel){
         	tmp_user = tmp_channel->getUserChannel(usr_exmpl->getNickUser());
-        	if (!tmp_user) // Юзера еще нет в канале
+        	if (!tmp_user)
 			{
 				tmp_channel->addUserChannel(usr_exmpl);
-				tmp_channel->sendJoinAll(usr_exmpl->getNickUser()); //Написали всем в канале
+				tmp_channel->sendJoinAll(usr_exmpl->getNickUser());
                 tmp_channel->sendReplaySenderJoin(usr_exmpl->getNickUser());
 			}
         }
-        else{ //Нет такого канала, создаем новый //ERR_NOSUCHCHANNEL
-            sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + toLowerString(tmp_arg[0]), "ERR_NOSUCHCHANNEL"); //:IRCat 403 oper chan_kek :No such channel
-            channels.push_back(new Channel(toLowerString(tmp_arg[0]), getVectUser())); //"#" + ??
+        else{
+            sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + toLowerString(tmp_arg[0]), "ERR_NOSUCHCHANNEL");
+            channels.push_back(new Channel(toLowerString(tmp_arg[0]), getVectUser()));
             tmp_channel = getChannel(toLowerString(tmp_arg[0]));
             if (tmp_channel) {
                 tmp_channel->addUserChannel(usr_exmpl);
                 tmp_channel->sendReplaySenderJoin(usr_exmpl->getNickUser());
-                tmp_channel->sendJoinAll(usr_exmpl->getNickUser()); //Написали всем в канале
+                tmp_channel->sendJoinAll(usr_exmpl->getNickUser());
             }
         }
     }
-    else{ // Указано больше одного канала
+    else{
         res.code_response = "405";
         res.str_response = "ERR_TOOMANYCHANNELS";
     }
@@ -548,9 +448,8 @@ response_server Serv::who(Request comm_exmpl) {
 	response_server res;
 	std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
 	Channel* tmp_channel;
-
 	if (tmp_arg.size() >= 1 && tmp_arg[0].size() > 0){
-		if (tmp_arg[0][0] == '#'){ //запрос юзеров в канале
+		if (tmp_arg[0][0] == '#'){
 			tmp_channel = getChannel(tmp_arg[0]);
 			if(tmp_channel){
 				res.str_response = tmp_channel->getWhoChannel();
@@ -565,7 +464,6 @@ response_server Serv::pingClient(int fd_client, Request comm_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     std::string str_replay;
-
     str_replay = "PONG " + tmp_arg[0] + "\r\n";
     write(fd_client, str_replay.c_str(), str_replay.length());
     res.code_response = "";
@@ -576,16 +474,12 @@ response_server Serv::pongClient(Request comm_exmpl, User *usr_exmpl, int index_
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     std::time_t result;
-
-
     if (tmp_arg.size() == 1){
         if (tmp_arg[0] == "1648063017"){
             result = std::time(NULL);
             if(usr_exmpl)
                 usr_exmpl->setTimeStamp(result);
             arr_timestamp[index_fd] = std::time(NULL);
-//            std::cout << "PONG timestamp=" << result << "\n";
-            //обновляем timestamp
         }
     }
     res.code_response = "";
@@ -595,7 +489,6 @@ response_server Serv::pongClient(Request comm_exmpl, User *usr_exmpl, int index_
 response_server Serv::oper(Request comm_exmpl, User *usr_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
-
     if (tmp_arg.size() < 2){
         res.code_response = "461";
         res.str_response = "ERR_NEEDMOREPARAMS";
@@ -617,7 +510,6 @@ response_server Serv::quit(Request comm_exmpl, User *usr_exmpl, int index_fd) {
     int tmp_fd;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     response_server res;
-
     tmp_fd = usr_exmpl->getFdUser();
     tmp_user_for_del = *(getUserIter(tmp_fd));
     if (index_fd != 0)
@@ -629,16 +521,15 @@ response_server Serv::quit(Request comm_exmpl, User *usr_exmpl, int index_fd) {
         delete tmp_user_for_del;
     }
     if (tmp_fd != -1)
-        close(tmp_fd); //todo: Узнать, насколько нужная штука
+        close(tmp_fd);
     res.code_response = "";
     return (res);
 }
 
-response_server Serv::kick(Request comm_exmpl, User *usr_exmpl){
+response_server Serv::kick(Request comm_exmpl, User *usr_exmpl) {
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     response_server res;
     Channel *tmp_channel;
-
     if (tmp_arg.size() < 2){
         res.code_response = "461";
         res.str_response = "ERR_NEEDMOREPARAMS";
@@ -649,7 +540,7 @@ response_server Serv::kick(Request comm_exmpl, User *usr_exmpl){
         res.code_response = "403";
         res.str_response = "ERR_NOSUCHCHANNEL";
     }
-    else if (usr_exmpl->getNickUser() != tmp_channel->getNickOperChannel()){
+    else if (usr_exmpl->getNickUser() != tmp_channel->getNickOperChannel()) {
         res.code_response = "403";
         res.str_response = "ERR_NOSUCHCHANNEL";
     }
@@ -659,14 +550,12 @@ response_server Serv::kick(Request comm_exmpl, User *usr_exmpl){
     return (res);
 }
 
-response_server Serv::kill(Request comm_exmpl, User *usr_exmpl){
+response_server Serv::kill(Request comm_exmpl, User *usr_exmpl) {
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
     response_server res;
     User *drop_user;
-
     int fd_drop_user;
     int index_fd = 0;
-
     if (usr_exmpl->getFlagOper() == 0){
         res.code_response = "481";
         res.str_response = "ERR_NOPRIVILEGES";
@@ -701,31 +590,27 @@ response_server Serv::list(User *usr_exmpl) {
     std::string mes_322;
     std::string mes_323;
     response_server res;
-
     mes_321 = ":IRC 321 " + usr_exmpl->getNickUser() + " Channel :Users Name\n\r";
     mes_323 = ":IRC 323 " + usr_exmpl->getNickUser() + " :End of /LIST\n\r";
-    write(usr_exmpl->getFdUser(), mes_321.c_str(), mes_321.length()); // Отправка ответа в сокет
+    write(usr_exmpl->getFdUser(), mes_321.c_str(), mes_321.length());
     for (; iter_begin != iter_end; iter_begin++){
         mes_322 = ":IRC 322 " + usr_exmpl->getNickUser() + " " + (*iter_begin)->getNameChannel() + " " + (*iter_begin)->getNumberUsers() + "\n\r";
         write(usr_exmpl->getFdUser(), mes_322.c_str(), mes_322.length());
     }
-    write(usr_exmpl->getFdUser(), mes_323.c_str(), mes_323.length()); // Отправка ответа в сокет
+    write(usr_exmpl->getFdUser(), mes_323.c_str(), mes_323.length());
     res.code_response = "";
     return (res);
 }
 
-////command utils
 User *Serv::getUser(int fd) {
     std::vector<User*>::iterator iter = _users.begin();
     std::vector<User*>::iterator iter_end = _users.end();
-
     for (;iter != iter_end; iter++){
         if (fd == (*iter)->getFdUser())
             return (*iter);
     }
     return (NULL);
 }
-
 
 User *Serv::getUser(std::string nick) {
     std::vector<User*>::iterator iter = _users.begin();
@@ -749,7 +634,7 @@ std::vector<User *>::iterator Serv::getUserIter(int fd) {
     return (iter);
 }
 
-int Serv::checkNick(std::string nick) { //Проверка валидности nick
+int Serv::checkNick(std::string nick) {
     size_t nick_size = nick.size();
     for (size_t i = 0; i < nick_size; i++) {
         if ((nick[i] >= 'a' && nick[i] <= 'z') || (nick[i] >= 'A' && nick[i] <= 'Z')
@@ -758,16 +643,14 @@ int Serv::checkNick(std::string nick) { //Проверка валидности 
         else
             return (0);
     }
-    if (getUser(nick)) //nick уже используется
+    if (getUser(nick))
         return (1);
     return (2);
 }
 
 int Serv::getCountCommand(char *buf) {
     int count = 0;
-//    std::istringstream iss(buf);
     std::string str(buf);
-
     for (size_t i = 0; i < str.length(); i++){
         if (str[i] == '\n')
             count++;
@@ -779,10 +662,8 @@ std::string Serv::getTmpBuf(int count, char *buf) {
     std::string res(buf);
     std::string tmp_res = "";
     size_t pos;
-
     while (res.find("\r\n") != std::string::npos)
         res.replace(res.find("\r\n"), 2, "\n");
-
     if (count == 0){
         pos = res.find('\n');
         res.erase(pos);
@@ -808,18 +689,16 @@ std::string Serv::getTmpBuf(int count, char *buf) {
 
 void Serv::sendNoUser(int fd, std::string code, std::string text) {
         std::string response_serv = ":IRC " + code + " " + " : " + text + "\r\n";
-        write(fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
+        write(fd, response_serv.c_str(), response_serv.length());
 }
 
-////Channel chart
 std::vector<User*> *Serv::getVectUser(){
     return (&_users);
 }
 
-Channel* Serv::getChannel(std::string channel_name){
+Channel* Serv::getChannel(std::string channel_name) {
     std::vector<Channel*>::iterator it_begin = channels.begin();
     std::vector<Channel*>::iterator it_end = channels.end();
-
     for (; it_begin != it_end; it_begin++){
         if ((*it_begin)->getNameChannel() == channel_name)
             return (*it_begin);
@@ -827,10 +706,9 @@ Channel* Serv::getChannel(std::string channel_name){
     return (NULL);
 }
 
-void Serv::clearChannel(std::string name_user){
+void Serv::clearChannel(std::string name_user) {
     std::vector<Channel*>::iterator it_chan_begin;
     std::vector<Channel*>::iterator it_chan_end;
-
     if (channels.size() > 0){
         it_chan_begin = channels.begin();
         it_chan_end = channels.end();
@@ -846,7 +724,6 @@ void Serv::sendQuitUser(std::string name_user, std::vector<std::string> tmp_arg_
     std::string message;
     std::string replay;
     int index_fd;
-
     if (_users.size() > 0){
         it_begin = _users.begin();
         it_end = _users.end();
@@ -855,7 +732,6 @@ void Serv::sendQuitUser(std::string name_user, std::vector<std::string> tmp_arg_
         else
             message = "No reason quit";
         replay = ":" + name_user + "!Adium@127.0.0.1 QUIT :" + message + "\r\n";
-
         for (; it_begin != it_end; it_begin++){
             index_fd = getIndexFd((*it_begin)->getFdUser());
             if (index_fd < 1)
@@ -866,19 +742,17 @@ void Serv::sendQuitUser(std::string name_user, std::vector<std::string> tmp_arg_
     }
 }
 
-std::string Serv::getMessageServ(std::vector<std::string> vect_arg){
+std::string Serv::getMessageServ(std::vector<std::string> vect_arg) {
     std::string res = "";
-
     if (vect_arg.size() == 0)
         return (res);
-
-    if (vect_arg.size() == 1){ // "1" или ":1"
+    if (vect_arg.size() == 1){
         res = vect_arg[0];
         if (res[0] == ':') {
             res.erase(0);
         }
     }
-    else if(vect_arg.size() > 1){ //"1 2 3" или ":1 2 3"
+    else if(vect_arg.size() > 1){
         if (vect_arg[0][0] != ':')
             res = vect_arg[0];
         else {
@@ -890,7 +764,7 @@ std::string Serv::getMessageServ(std::vector<std::string> vect_arg){
     return (res);
 }
 
-int Serv::getIndexFd(int fd){
+int Serv::getIndexFd(int fd) {
     for (int i = 0; i < MAX_USERS; i++){
         if (fd == fd_list[i].fd)
             return (i);
@@ -898,8 +772,7 @@ int Serv::getIndexFd(int fd){
     return (0);
 }
 
-std::string Serv::toLowerString(std::string strUp){
-
+std::string Serv::toLowerString(std::string strUp) {
     for (size_t i = 0; i < strUp.size(); i++)
       strUp[i] = ::tolower(strUp[i]);
     return (strUp);
