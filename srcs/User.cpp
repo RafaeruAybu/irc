@@ -42,7 +42,7 @@ const std::string &User::getUserUser() {
 }
 
 void User::setNick(std::string nick){
-    _nick = nick;
+    _nick = (nick);
 }
 
 void User::setFlagReg() {

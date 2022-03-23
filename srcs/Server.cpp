@@ -165,7 +165,7 @@ void Serv::do_poll_default()
             {
                 std::cout << "client quit..." << std::endl;
 //                std::cout << "fd quit:" <<  fd_list[i].fd << "\n";
-//                delete getUser(fd_list[i].fd);
+                delete getUser(fd_list[i].fd);
                 tmp_user_for_del = *(getUserIter(fd_list[i].fd));
                 if (getUserIter(fd_list[i].fd) != _users.end()) {
 
@@ -351,7 +351,7 @@ response_server Serv::nick(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 //        res.str_response = "ERR_NICKNAMEINUSE";
     }
     else{
-        usr_exmpl->setNick(tmp_arg[0]);
+        usr_exmpl->setNick(toLowerString(tmp_arg[0]));
         if (usr_exmpl->getUserUser() != "Undefined") {
             usr_exmpl->setFlagReg();
             usr_exmpl->sendMTD();
@@ -622,7 +622,8 @@ response_server Serv::quit(Request comm_exmpl, User *usr_exmpl, int index_fd) {
     tmp_fd = usr_exmpl->getFdUser();
 
     tmp_user_for_del = *(getUserIter(tmp_fd));
-    fd_list[index_fd].fd = -1;
+    if (index_fd != 0)
+        fd_list[index_fd].fd = -1;
     if (getUserIter(tmp_fd) != _users.end()) {
 //        sendQuitUser(usr_exmpl->getNickUser(), comm_exmpl);
 
@@ -633,8 +634,8 @@ response_server Serv::quit(Request comm_exmpl, User *usr_exmpl, int index_fd) {
         delete tmp_user_for_del;
 
     }
-//    if (tmp_fd != -1)
-//        close(tmp_fd); //todo: Узнать, насколько нужная штука
+    if (tmp_fd != -1)
+        close(tmp_fd); //todo: Узнать, насколько нужная штука
 
 
     res.code_response = "";
@@ -899,13 +900,12 @@ void Serv::sendQuitUser(std::string name_user, std::vector<std::string> tmp_arg_
                 break ;
             std::cout << "index_fd[" << index_fd << "]=" << (*it_begin)->getFdUser() << "\n";
 
-            std::cout << "fd_list" << fd_list[index_fd].fd << "\n";
+            std::cout << "fd_list=" << fd_list[index_fd].fd << "\n";
             std::cout << "FD=" << (*it_begin)->getFdUser() << "\n";
-            int Errors_sock = send((*it_begin)->getFdUser(), "s ", 0, 1);
+//            int Errors_sock = send((*it_begin)->getFdUser(), "s ", 0, 1);
 
-            std::cout << "Errors_sock=" << Errors_sock << "\n";
-//            if (fd_list[index_fd].fd != -1)
-                if (Errors_sock < 1)
+//            std::cout << "Errors_sock=" << Errors_sock << "\n";
+            if (fd_list[index_fd].fd != -1 && index_fd > 0)
             {
                 std::cout << "fd_list" << fd_list[index_fd].fd << "\n";
                 write((*it_begin)->getFdUser(), replay.c_str(), replay.length());
@@ -969,4 +969,9 @@ int const Serv::getIndexFd(int fd){
             return (i);
     }
     return (0);
+}
+
+std::string Serv::toLowerString(std::string strUp){
+    transform(strUp.begin(), strUp.end(), strUp.begin(), ::tolower);
+    return (strUp);
 }

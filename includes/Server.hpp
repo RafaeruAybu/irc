@@ -121,7 +121,7 @@ private:
     void sendQuitUser(std::string name_user, std::vector<std::string> tmp_arg_1);
 
     std::string getMessageServ(std::vector<std::string> tmp_arg);
-//    std::string Serv::toLowerString(std::string strUp);
+    std::string toLowerString(std::string strUp);
 
 };
 
