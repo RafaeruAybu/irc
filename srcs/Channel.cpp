@@ -37,8 +37,6 @@ void Channel::sendJoinAll(std::string new_user){
             write(fd, mes_join_all.c_str(), mes_join_all.length());
         }
     }
-    //:kek!Adium@127.0.0.1 JOIN :#chkek - рассылка всем в канале, когда присоединился новый юзер //todo: сделать рассылку всем в Channel._channel_user
-    // kek - новый юзер, #chkek - канал
 }
 
 void Channel::addUserChannel(User *new_user){  //
@@ -84,7 +82,6 @@ std::string Channel::getMessage(std::vector<std::string> vect_arg) {
 		if (flag_mnogo)
 			res.erase(res.end() - 1);
 		res.erase(res.begin());
-//		std::cout << "get Message res=" << res << "\n";
 		return (res);
 	}
 }
@@ -107,8 +104,6 @@ void Channel::sendPrivChannel(std::vector<std::string> vect_arg, std::string sen
 			}
 		}
 	}
-	//:dduck!Adium@127.0.0.1 PRIVMSG #chan :Hu is hu
-	//:nick_sender PRIVMSG #channel :message
 }
 
 
@@ -160,9 +155,7 @@ std::string Channel::getNumberUsers(){
     std::stringstream ss;
     for (i = 0; i < _channel_user.size(); i++){
     }
-
     ss << i;
     str_res = ss.str();
     return (str_res);
-
 }

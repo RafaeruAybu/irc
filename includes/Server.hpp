@@ -42,8 +42,6 @@ public:
     void get_into_loop();
     ~Serv();
 
-
-
 private:
     Serv();
     Serv(const Serv &other);
@@ -65,31 +63,16 @@ private:
     response_server notice(Request comm_exmpl, User *usr_exmpl);
     response_server join(int fd_client, Request comm_exmpl, User *usr_exmpl);
 	response_server who(Request comm_exmpl);
-    response_server pingClient(int fd_client, Request comm_exmpl, User *usr_exmpl);
-    response_server pongClient(int fd_client, Request comm_exmpl, User *usr_exmpl);
+    response_server pingClient(int fd_client, Request comm_exmpl);
+    response_server pongClient(Request comm_exmpl, User *usr_exmpl);
     response_server oper(Request comm_exmpl, User *usr_exmpl);
     response_server quit(Request comm_exmpl, User *usr_exmpl, int index_fd);
     response_server kill(Request comm_exmpl, User *usr_exmpl); //кикает с сервера, может только иркоп
     response_server kick(Request comm_exmpl, User *usr_exmpl); //кикает с канала, может только чопер
-    response_server list(Request comm_exmpl, User *usr_exmpl);
+    response_server list(User *usr_exmpl);
 
+    int getIndexFd(int fd);
 
-
-
-    int const getIndexFd(int fd);
-
-
-
-    void delete_user();
-    void add_channel();
-    void delete_channel();
-    void add_user_to_channel();
-    void delete_user_from_channel();
-    void add_user_to_operators();
-    void delete_user_from_operators();
-    void kill();    //it is kiLL
-    void kick();    //it is kiCK
-    void ban();     //тупа бан
     //params
     char bufs[MAX_USERS][BUFF_SIZE];    //4 Mb size in stack
     bool exit_server;
