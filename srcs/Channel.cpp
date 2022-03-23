@@ -121,9 +121,9 @@ void Channel::sendReplaySenderJoin(std::string nick_sender){
 
     tmp_user = getUserChannel(nick_sender);
     if (tmp_user){
-        str_replay_1 = "::IRC 331 " + nick_sender + " " + getNameChannel() + " :No topic is set\r\n";
-        str_replay_2 = "::IRC 353 " + nick_sender + " = " + getNameChannel() + " :@" + getWhoChannel() + "\r\n";
-        str_replay_3 = "::IRC 366 " + nick_sender + " " + getNameChannel() + " :End of /NAMES list\r\n";
+        str_replay_1 = ":IRC 331 " + nick_sender + " " + getNameChannel() + " :No topic is set\r\n";
+        str_replay_2 = ":IRC 353 " + nick_sender + " = " + getNameChannel() + " :@" + getWhoChannel() + "\r\n";
+        str_replay_3 = ":IRC 366 " + nick_sender + " " + getNameChannel() + " :End of /NAMES list\r\n";
         fd = tmp_user->getFdUser();
         write(fd, str_replay_1.c_str(), str_replay_1.length());
         write(fd, str_replay_2.c_str(), str_replay_2.length());
