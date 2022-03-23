@@ -141,4 +141,8 @@ void User::setFlagOper(){
     _flag_operator = 1;
 }
 
+void User::setTimeStamp(std::time_t newTimeStamp){
+    _timestamp = newTimeStamp;
+}
+
 

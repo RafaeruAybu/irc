@@ -272,7 +272,9 @@ void Serv::process(int fd, char *buf, int index_fd)
             else if (command_exmpl->get_comm() == "KICK") {
                 my_response = kick(*command_exmpl, usr_exmpl);
             }
-            else if (command_exmpl->get_comm() == "MODE") {}
+            else if (command_exmpl->get_comm() == "PONG") {
+                my_response = pongClient(fd, *command_exmpl, usr_exmpl);
+            }
             else if (command_exmpl->get_comm() == "PING") {
                 my_response = pingClient(fd, *command_exmpl, usr_exmpl);
             }
@@ -584,6 +586,22 @@ response_server Serv::pingClient(int fd_client, Request comm_exmpl, User *usr_ex
 
     res.code_response = "";
     return(res);
+}
+
+response_server Serv::pongClient(int fd_client, Request comm_exmpl, User *usr_exmpl){
+    response_server res;
+    std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
+    std::time_t result;
+    if (tmp_arg.size() == 1){
+        if (tmp_arg[0] == "1648063017"){
+            result = std::time(nullptr);
+            usr_exmpl->setTimeStamp(result);
+            std::cout << "PONG timestamp=" << result << "\n";
+            //обновляем timestamp
+        }
+    }
+    res.code_response = "";
+    return (res);
 }
 
 

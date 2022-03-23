@@ -38,6 +38,7 @@ public:
     void sendSTDReplay(std::string code, std::string text);
     int sendPrivMSG(Request comm_exmpl, std::string sender);
 //    void sendJoinReplay(std::string channel_name); в Channel
+    void setTimeStamp(std::time_t newTimeStamp);
 
 
 
@@ -55,6 +56,7 @@ private:
     int _flag_operator;
     int _flag_away;
     std::string flag;
+    std::time_t _timestamp;
 
     bool f_logged;
     bool f_operator;
