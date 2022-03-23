@@ -75,21 +75,17 @@ int Serv::get_listen_sock(int port)
 //todo maybe implement close server
 void Serv::do_poll_timeout()
 {
-//    std::cout << "poll timeout..." << std::endl; ////Чтоб не спамил)
-    // if (fcntl(0, F_SETFL, O_NONBLOCK)) //make new sock is non-blocking
-    //             throw "Could not set non-blocking socket...";
-    // char server_command_str[50];
-    // ssize_t size = read(0, server_command_str, sizeof(server_command_str) - 1);
-    // if (size < 0)
-    // {
-    //     if (errno != EWOULDBLOCK)
-    //                 std::cout << "read failed..." << std::endl;
-    //     continue;
-    // }
-    // else
-    //     server_command_str[size] = '\0';
-    // if (strstr(server_command_str, "stop"))
-    //     exit_server = true;
+    std::string ping_str("PING 1648063017\r\n");
+    for (int i = 1; i < MAX_USERS; i++)
+    {
+        int ret = write(fd_list[i].fd, ping_str.c_str(), ping_str.length());
+        if (ret <= 0)
+            std::cout << "Error: sending ping" << std::endl;
+        else
+        {
+            
+        }
+    }
 }
 
 void Serv::do_poll_fail()
