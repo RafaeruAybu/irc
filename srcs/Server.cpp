@@ -165,14 +165,16 @@ void Serv::do_poll_default()
             {
                 std::cout << "client quit..." << std::endl;
 //                std::cout << "fd quit:" <<  fd_list[i].fd << "\n";
-                delete getUser(fd_list[i].fd);
-                tmp_user_for_del = *(getUserIter(fd_list[i].fd));
-                if (getUserIter(fd_list[i].fd) != _users.end()) {
+//                delete getUser(fd_list[i].fd);
+                if (_users.size() > 0) {
+                    tmp_user_for_del = *(getUserIter(fd_list[i].fd));
+                    if (getUserIter(fd_list[i].fd) != _users.end()) {
 
-                    _users.erase((getUserIter(fd_list[i].fd)));
-                    clearChannel(tmp_user_for_del->getNickUser());
-                    if (tmp_user_for_del)
-                        delete tmp_user_for_del;
+                        _users.erase((getUserIter(fd_list[i].fd)));
+                        clearChannel(tmp_user_for_del->getNickUser());
+                        if (tmp_user_for_del)
+                            delete tmp_user_for_del;
+                    }
                 }
                 if (close(fd_list[i].fd) != -1)
                     close(fd_list[i].fd);
