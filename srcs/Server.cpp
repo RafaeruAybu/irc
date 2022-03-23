@@ -94,7 +94,7 @@ void Serv::do_poll_timeout()
         }
         it_begin = _users.begin();
         for (; it_begin != it_end; it_begin++){
-            realTime = std::time(nullptr);
+            realTime = std::time(NULL);
             timestamp = (*it_begin)->getTimeStamp();
             if (realTime - timestamp >= TIMEOUT){
                 i = getIndexFd((*it_begin)->getFdUser());
@@ -546,7 +546,7 @@ response_server Serv::pongClient(Request comm_exmpl, User *usr_exmpl) {
     std::time_t result;
     if (tmp_arg.size() == 1){
         if (tmp_arg[0] == "1648063017"){
-            result = std::time(nullptr);
+            result = std::time(NULL);
             usr_exmpl->setTimeStamp(result);
             std::cout << "PONG timestamp=" << result << "\n";
             //обновляем timestamp

@@ -3,7 +3,7 @@
 User::User() : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(0), _flag_reg(0), _flag_operator(0), _flag_away(0), _host_name(""), _servername(""), _realname("")   {}
 
 User::User(int fd) : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(fd), _flag_reg(0), _flag_operator(0), _flag_away(0), _host_name(""), _servername(""), _realname("")  {
-    _timestamp = std::time(nullptr);
+    _timestamp = std::time(NULL);
 }
 
 User::User(const User &other) : _user_name(other._user_name), _nick(other._nick)

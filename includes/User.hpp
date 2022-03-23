@@ -5,6 +5,7 @@
 #include <vector>
 #include <unistd.h>
 #include <cctype>
+#include <ctime>
 #include "Request.hpp"
 //#include "Server.hpp"
 
