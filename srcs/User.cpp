@@ -1,8 +1,8 @@
 #include "../includes/User.hpp"
 
-User::User() : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(0), _flag_reg(0), _flag_operator(0), _flag_away(0), _host_name(""), _servername(""), _realname("")   {}
+User::User() : _fd(0), _user_name("Undefined"), _nick("Undefined"), _host_name(""), _servername(""), _realname(""), _flag_reg(0), _flag_operator(0), _flag_away(0), f_logged(0), f_operator(0)   {}
 
-User::User(int fd) : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(fd), _flag_reg(0), _flag_operator(0), _flag_away(0), _host_name(""), _servername(""), _realname("")  {
+User::User(int fd) :  _fd(fd), _user_name("Undefined"), _nick("Undefined"), _host_name(""), _servername(""), _realname(""), _flag_reg(0), _flag_operator(0), _flag_away(0), f_logged(0), f_operator(0)  {
     _timestamp = std::time(NULL);
 }
 

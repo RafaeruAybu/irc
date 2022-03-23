@@ -29,7 +29,6 @@ public:
     int getFlagReg();
     int getFlagOper();
 
-
     void setNick(std::string nick);
     void setFlagReg();
     void setFlagOper();
@@ -41,9 +40,6 @@ public:
 //    void sendJoinReplay(std::string channel_name); в Channel
     void setTimeStamp(std::time_t newTimeStamp);
     std::time_t getTimeStamp();
-
-
-
 
 private:
     User();
