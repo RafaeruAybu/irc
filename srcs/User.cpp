@@ -17,11 +17,9 @@ User::~User() {
     _servername.clear();
 }
 
-User & User::operator= (const User &other)
-{
+User & User::operator= (const User &other) {
     if (this == &other)
         return *this;
-
     _user_name = other._user_name;
     _nick = other._nick;
     f_logged = other.f_logged;
@@ -61,56 +59,50 @@ int User::getFlagReg() {
 }
 
 void User::sendMTD() {
-
     std::string mes_375 = ":IRC 375 " + _nick + " :- IRC Message of the day -\r\n";
     std::string mes_372 = ":IRC 372 " + _nick + " :- IRC Welcome to server!!!\r\n";
     std::string mes_376 = ":IRC 376 " + _nick + " :End of /MOTD command\r\n";
-
     write(_fd, mes_375.c_str(), mes_375.length());
     write(_fd, mes_372.c_str(), mes_372.length());
     write(_fd, mes_376.c_str(), mes_376.length());
 }
 
 void User::sendSTDReplay(std::string code, std::string text) {
-
     std::string response_serv = ":IRC " + code + " " + getNickUser() + " : " + text + "\r\n";
-    write(_fd, response_serv.c_str(), response_serv.length()); // Отправка ответа в сокет
+    write(_fd, response_serv.c_str(), response_serv.length());
 }
 
-int User::sendPrivMSG(Request comm_exmpl, std::string sender) { //нет проверки на ':'
+int User::sendPrivMSG(Request comm_exmpl, std::string sender) {
     std::string replay;
     std::string replay2;
-    
     size_t size_vect_arg = comm_exmpl.get_vect_arg().size();
     std::vector<std::string> vect_arg;
     vect_arg = comm_exmpl.get_vect_arg();
     replay = ":" + sender + " " + comm_exmpl.get_comm();
     if (!_flag_away) {
-        for (size_t i = 0; i < size_vect_arg; i++){
+        for (size_t i = 0; i < size_vect_arg; i++){ 
             replay += (" " + vect_arg[i]);
         }
         replay += "\r\n";
-        write(_fd, replay.c_str(), replay.length()); // :oper PRIVMSG dduck :opop
+        write(_fd, replay.c_str(), replay.length());
         return (1);
     }
     else
         return (0);
 }
 
-int User::getFlagOper(){
+int User::getFlagOper() {
     return (_flag_operator);
 }
 
-void User::setFlagOper(){
+void User::setFlagOper() {
     _flag_operator = 1;
 }
 
-void User::setTimeStamp(std::time_t newTimeStamp){
+void User::setTimeStamp(std::time_t newTimeStamp) {
     _timestamp = newTimeStamp;
 }
 
-std::time_t User::getTimeStamp(){
+std::time_t User::getTimeStamp() {
     return (_timestamp);
 }
-
-

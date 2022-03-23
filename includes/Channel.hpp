@@ -4,12 +4,8 @@
 #include <iostream>
 #include <string>
 #include "User.hpp"
-//#include "Server.hpp"
 
-//class Serv;
-
-class Channel
-{
+class Channel {
 public:
     Channel(std::string name, std::vector<User*> *vect_user);
     Channel(const Channel &other);
@@ -31,10 +27,9 @@ private:
     Channel();
     Channel & operator= (const Channel &other);
     std::string _name;
-    std::vector<User*> *_ptr_vector_users; //Весь список юзеров на сервере //Пока не пойму - зачем
-    std::vector<User*> _channel_user; // юзеры в канале
+    std::vector<User*> *_ptr_vector_users;
+    std::vector<User*> _channel_user;
 
-    ////utils
 	std::string getMessage(std::vector<std::string> vect_arg);
 
 };

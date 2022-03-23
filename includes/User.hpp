@@ -7,17 +7,12 @@
 #include <cctype>
 #include <ctime>
 #include "Request.hpp"
-//#include "Server.hpp"
-
-//response_server;
 
 class Serv;
 
-class User
-{
+class User {
 public:
     User(int fd);
-//    User(std::string name, std::string nick);
     User(const User &other);
     ~User();
 
@@ -37,7 +32,6 @@ public:
     void sendMTD();
     void sendSTDReplay(std::string code, std::string text);
     int sendPrivMSG(Request comm_exmpl, std::string sender);
-//    void sendJoinReplay(std::string channel_name); в Channel
     void setTimeStamp(std::time_t newTimeStamp);
     std::time_t getTimeStamp();
 
@@ -59,8 +53,6 @@ private:
 
     bool f_logged;
     bool f_operator;
-
-    ////
 };
 
 #endif
