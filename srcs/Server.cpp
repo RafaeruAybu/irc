@@ -972,6 +972,9 @@ int const Serv::getIndexFd(int fd){
 }
 
 std::string Serv::toLowerString(std::string strUp){
-    transform(strUp.begin(), strUp.end(), strUp.begin(), ::tolower);
+
+    for (size_t i = 0; i < strUp.size(); i++)
+      strUp[i] = ::tolower(strUp[i]);
+//    transform(strUp.begin(), strUp.end(), strUp.begin(), ::tolower); //C17
     return (strUp);
 }
