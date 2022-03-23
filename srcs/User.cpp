@@ -2,7 +2,9 @@
 
 User::User() : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(0), _flag_reg(0), _flag_operator(0), _flag_away(0), _host_name(""), _servername(""), _realname("")   {}
 
-User::User(int fd) : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(fd), _flag_reg(0), _flag_operator(0), _flag_away(0), _host_name(""), _servername(""), _realname("")  {}
+User::User(int fd) : _user_name("Undefined"), _nick("Undefined"), f_logged(0), f_operator(0), _fd(fd), _flag_reg(0), _flag_operator(0), _flag_away(0), _host_name(""), _servername(""), _realname("")  {
+    _timestamp = std::time(nullptr);
+}
 
 //User::User(std::string name, std::string nick) : _user_name(name), _nick(nick), f_logged(0), f_operator(0) {}
 
@@ -143,6 +145,10 @@ void User::setFlagOper(){
 
 void User::setTimeStamp(std::time_t newTimeStamp){
     _timestamp = newTimeStamp;
+}
+
+std::time_t User::getTimeStamp(){
+    return (_timestamp);
 }
 
 

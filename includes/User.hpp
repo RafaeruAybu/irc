@@ -39,6 +39,8 @@ public:
     int sendPrivMSG(Request comm_exmpl, std::string sender);
 //    void sendJoinReplay(std::string channel_name); в Channel
     void setTimeStamp(std::time_t newTimeStamp);
+    std::time_t getTimeStamp();
+
 
 
 

@@ -75,18 +75,59 @@ int Serv::get_listen_sock(int port)
 //todo maybe implement close server
 void Serv::do_poll_timeout()
 {
+    std::vector<User*>::iterator it_begin;
+    std::vector<User*>::iterator it_end;
+    int tmp_fd;
+    int i;
+    std::time_t timestamp;
+    std::time_t realTime;
+    User* tmp_user_for_del;
+
+
     std::string ping_str("PING 1648063017\r\n");
-    for (int i = 1; i < MAX_USERS; i++)
-    {
-        int ret = write(fd_list[i].fd, ping_str.c_str(), ping_str.length());
-        if (ret <= 0)
-            std::cout << "Error: sending ping" << std::endl;
-        else
-        {
-            
+
+
+    if (!_users.empty()){
+        it_begin = _users.begin();
+        it_end = _users.end();
+        for (; it_begin != it_end; it_begin++){
+            int ret = write((*it_begin)->getFdUser(), ping_str.c_str(), ping_str.length());
+            if (ret <= 0) {
+                std::cout << "Error: sending ping" << std::endl;
+                return ;
+            }
+//            (*it_begin)->setTimeStamp(std::time(nullptr));
+        }
+        it_begin = _users.begin();
+        for (; it_begin != it_end; it_begin++){
+            realTime = std::time(nullptr);
+            timestamp = (*it_begin)->getTimeStamp();
+            if (realTime - timestamp >= TIMEOUT){
+
+                i = getIndexFd((*it_begin)->getFdUser());
+                if (i != 0) {
+                    if (_users.size() > 0) {
+                        tmp_user_for_del = *(getUserIter(fd_list[i].fd));
+                        if (getUserIter(fd_list[i].fd) != _users.end()) {
+
+                            _users.erase((getUserIter(fd_list[i].fd)));
+                            clearChannel(tmp_user_for_del->getNickUser());
+                            if (tmp_user_for_del)
+                                delete tmp_user_for_del;
+                        }
+                    }
+                    if (fd_list[i].fd != -1)
+                        close(fd_list[i].fd);
+                    fd_list[i].fd = -1;
+                }
+
+            }
+
         }
     }
 }
+
+
 
 void Serv::do_poll_fail()
 {
@@ -172,7 +213,7 @@ void Serv::do_poll_default()
                             delete tmp_user_for_del;
                     }
                 }
-                if (close(fd_list[i].fd) != -1)
+                if (fd_list[i].fd != -1)
                     close(fd_list[i].fd);
                 fd_list[i].fd = -1;
                 break;   //todo test

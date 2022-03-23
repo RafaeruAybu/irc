@@ -28,6 +28,7 @@
 #define MAX_USERS 1024      //user nums in 
 #define POLL_TIMEOUT 3000   //poll timeout time
 #define BUFF_SIZE 512       //fd read buff size
+#define TIMEOUT 30          //timeout PING seconds
 
 typedef struct response_server{
 	std::string code_response;
