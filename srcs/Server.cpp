@@ -1,6 +1,8 @@
 #include "../includes/Server.hpp"
 #include "../includes/Request.hpp"
 
+#define RPL_WHORPL(chanellname, nickname, username, isoper) chanellname + " " + username + " *  localhost " + nickname + isoper + " :0 *"
+
 Serv::Serv(char *port, char *password) {
     exit_server = false;
     _str_password = password;
@@ -21,12 +23,6 @@ Serv::Serv(char *port, char *password) {
             fd_list[i].fd = listen_socket;
             fd_list[i].events = POLLIN;
             break;
-        }
-    }
-    i = 0;
-    for (; i < MAX_USERS; i++) {
-        for (int j = 0; j < BUFF_SIZE; j++) {
-            bufs[i][j] = 0;
         }
     }
     for (long i = 0; i < MAX_USERS; i++){
@@ -118,7 +114,7 @@ int Serv::get_new_connection() {
     else
         close(new_sock);
     std::cout
-        << "get a new connection[" << inet_ntoa(client.sin_addr)
+        << "I got a new connection[" << inet_ntoa(client.sin_addr)
         << ":" << ntohs(client.sin_port) << "]" << std::endl;
     return 0;
 }
@@ -169,7 +165,7 @@ void Serv::do_poll_default() {
 
 void Serv::get_into_loop() {
     while (!exit_server) {
-        switch(poll(fd_list, num, POLL_TIMEOUT)) {
+        switch(poll(fd_list, num, -1)) { //POLL_TIMEOUT
             case 0:
                 do_poll_timeout();
                 continue ;
@@ -191,7 +187,13 @@ void Serv::process(int fd, char *buf, int index_fd) {
     int count_command;
     std::string tmp_buf;
     std::string response_serv = "";
-    std::cout << "User[" << fd << "]: " << buf << std::endl;
+    //do not print pong responses and clear "\r\n" before output
+    if (!strstr(buf, "PONG 1648063017")) {
+        std::string str(buf);
+        int pos = str.find("\r\n");
+        str.erase(pos, 2);
+        std::cout << "User[" << fd << "]: " << str << std::endl;
+    }
     count_command = getCountCommand(buf);
     for (int i = 0; i < count_command; i++) {
         tmp_buf = getTmpBuf(i, buf);
@@ -236,7 +238,7 @@ void Serv::process(int fd, char *buf, int index_fd) {
                 my_response = list(usr_exmpl);
             }
 			else if (command_exmpl->get_comm() == "WHO") {
-				my_response = who(*command_exmpl);
+				my_response = who(*command_exmpl, usr_exmpl);
 			}
         }
         if (my_response.code_response.length() != 0)
@@ -333,7 +335,6 @@ response_server Serv::user(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     return (res);
 }
 
-
 response_server Serv::privmsg(Request comm_exmpl, User *usr_exmpl) {
     response_server res;
     std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
@@ -426,7 +427,7 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl) {
 			}
         }
         else{
-            sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + toLowerString(tmp_arg[0]), "ERR_NOSUCHCHANNEL");
+            //sendNoUser(fd_client, "403 " + usr_exmpl->getNickUser() + " " + toLowerString(tmp_arg[0]), "ERR_NOSUCHCHANNEL");
             channels.push_back(new Channel(toLowerString(tmp_arg[0]), getVectUser()));
             tmp_channel = getChannel(toLowerString(tmp_arg[0]));
             if (tmp_channel) {
@@ -443,16 +444,32 @@ response_server Serv::join(int fd_client, Request comm_exmpl, User *usr_exmpl) {
     return (res);
 }
 
-
-response_server Serv::who(Request comm_exmpl) {
+//
+response_server Serv::who(Request comm_exmpl, User *usr_exmpl) {
 	response_server res;
 	std::vector<std::string> tmp_arg = comm_exmpl.get_vect_arg();
 	Channel* tmp_channel;
 	if (tmp_arg.size() >= 1 && tmp_arg[0].size() > 0){
-		if (tmp_arg[0][0] == '#'){
-			tmp_channel = getChannel(tmp_arg[0]);
-			if(tmp_channel){
-				res.str_response = tmp_channel->getWhoChannel();
+		if (tmp_arg[0][0] == '#'){ //for channel
+			tmp_channel = getChannel(tmp_arg[0]); //channel name
+			if(tmp_channel){ //if chanel exist
+                std::vector<User*> _channel_user = tmp_channel->getChannelUser();
+                std::vector<User *>::iterator it_begin = _channel_user.begin();
+                std::vector<User *>::iterator it_end = _channel_user.end();
+                for (; it_begin != it_end; it_begin++) //send for every user in channel
+                {
+                    std::string is_oper;
+                    if (!(*it_begin)->getFlagOper())
+                        is_oper = " H@";
+                    else
+                        is_oper = " H";
+                    res.str_response =  RPL_WHORPL(tmp_channel->getNameChannel(), (*it_begin)->getNickUser(), (*it_begin)->getUserUser(), is_oper);
+                    res.code_response = "352";
+                    usr_exmpl->sendSTDReplay(res.code_response, res.str_response);
+                }
+                // send end of channel
+
+				res.str_response = "End of /WHO list";         //tmp_channel->getWhoChannel();
 				res.code_response = "315";
 			}
 		}

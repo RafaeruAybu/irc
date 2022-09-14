@@ -1,0 +1,62 @@
+RESPONCE:
+352     RPL_WHOREPLY
+                "<channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real name>"
+
+               chanellname nickname * IRC nickname <H|G>[*][@|+] :0 *
+
+
+
+315     RPL_ENDOFWHO
+                "<name> :End of /WHO list"
+
+
+
+
+
+
+
+
+
+
+server_name ":IRC"
+
+RPL_ENDOFWHO:
+
+<name> End of /WHO list
+
+У ЧОПа добавляется «@» после ника в отображении NAMES, WHO и WHOIS
+
+Понять как работает реплай.
+переделать реплай под себя.
+
+
+INTER_______:
+PASS :raf
+USER Adium * 127.0.0.1 :Adium User
+NICK rafa
+
+
+:localhost 375 rafa Message of the day -
+:localhost 372 rafa :- Welcome to the Internet Relay Network
+:localhost 376 rafa :End of /MOTD command
+
+JOIN_______1:
+JOIN #newchat
+
+:rafa!Adium@* JOIN #newchat
+:localhost 331 #newchat :No topic is set
+:localhost 353 rafa = #newchat :@rafa
+:localhost 366 rafa #newchat :End of /NAMES list
+
+WHO #newchat
+
+:localhost 352 rafa #newchat Adium * localhost rafa H@ :0 Adium User
+:localhost 315 rafa #newchat :End of /WHO list
+
+JOIN_______2:
+
+WHO #newchat
+
+:localhost 352 lexa #newchat Adium * localhost rafa H@ :0 Adium User
+:localhost 352 lexa #newchat Adium * localhost lexa H :0 Adium User
+:localhost 315 lexa #newchat :End of /WHO list //todo delete : add #newchat

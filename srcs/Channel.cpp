@@ -144,3 +144,7 @@ std::string Channel::getNumberUsers() {
     str_res = ss.str();
     return (str_res);
 }
+
+const std::vector<User *> &Channel::getChannelUser() const {
+    return _channel_user;
+}

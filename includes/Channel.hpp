@@ -23,6 +23,8 @@ public:
     std::string getNickOperChannel();
     std::string getNumberUsers();
 
+    const std::vector<User *> &getChannelUser() const;
+
 private:
     Channel();
     Channel & operator= (const Channel &other);
@@ -30,7 +32,7 @@ private:
     std::vector<User*> *_ptr_vector_users;
     std::vector<User*> _channel_user;
 
-	std::string getMessage(std::vector<std::string> vect_arg);
+    std::string getMessage(std::vector<std::string> vect_arg);
 
 };
 

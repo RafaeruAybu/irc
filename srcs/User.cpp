@@ -68,7 +68,8 @@ void User::sendMTD() {
 }
 
 void User::sendSTDReplay(std::string code, std::string text) {
-    std::string response_serv = ":IRC " + code + " " + getNickUser() + " : " + text + "\r\n";
+    std::string response_serv = ":localhost " + code + " " + getNickUser() + " " + text + "\r\n";
+    std::cout << "<<<<<<<< " << response_serv << std::endl;
     write(_fd, response_serv.c_str(), response_serv.length());
 }
 
